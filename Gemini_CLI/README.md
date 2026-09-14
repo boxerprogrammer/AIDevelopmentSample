@@ -1,4 +1,8 @@
 # GemeniCLI(Antigravity)を利用したサンプルゲーム
+Webベースのものは以下のPythonコードを実行してサーバを立てて実行してください
+```bash
+python -m http.server
+```
 ## breakout-game
 ブロック崩しです(ステージあり、アイテムあり)
 ### プロンプト
