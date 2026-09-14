@@ -5,6 +5,8 @@ python -m http.server
 ```
 ## breakout-game
 ブロック崩しです(ステージあり、アイテムあり)
+<img width="831" height="760" alt="image" src="https://github.com/user-attachments/assets/2bc26fd7-8d62-4078-929a-3d701446ba9c" />
+
 ### プロンプト
 ```text
 既存のブロック崩しゲーム（index.html, style.css, game.js）を改修し、「複数ステージ制（全3ステージ）」と「localStorage を利用したハイスコアランキング機能」を追加実装してください。
@@ -50,6 +52,8 @@ python -m http.server
 ```
 ## tetris-game
 シンプルなテトリスです。
+<img width="894" height="876" alt="image" src="https://github.com/user-attachments/assets/f7633dcd-abd6-4549-bb33-bccead00119d" />
+
 ### プロンプト
 ```text
 HTML5 Canvasと純粋なJavaScript（バニラJS）を使用して、ブラウザで動作する完成度の高いテトリス風ゲームを一括作成してください。
@@ -83,6 +87,8 @@ HTML5 Canvasと純粋なJavaScript（バニラJS）を使用して、ブラウ�
 ```
 ## puyo-game
 いわゆるぷよぷよです。対戦もありますし、難易度も上がっていきます
+<img width="1078" height="882" alt="image" src="https://github.com/user-attachments/assets/7f7ab966-4b36-4d49-a674-2c0172cf4c1e" />
+
 ### プロンプト
 ```text
 HTML5 Canvasと純粋なモダンJavaScript（ES6+）を使用し、CPU対戦機能を備えた本格的な「ぷよぷよ」風アクションパズルゲームを一括作成してください。
@@ -147,6 +153,7 @@ HTML5 Canvasと純粋なモダンJavaScript（ES6+）を使用し、CPU対戦機
 いわゆる疑似3Dレースゲームです。正直思ったふうにできてません。
 パズルやブロック崩しとは異なり、なかなか意図したものが伝わってない感じはします。
 以下のプロンプトだけではうまくいかなかったため、何度も手直しをさせています
+<img width="1056" height="803" alt="image" src="https://github.com/user-attachments/assets/d8b69a03-3e92-451b-9111-692a22f2c7d9" />
 
 ### プロンプト
 ```text
