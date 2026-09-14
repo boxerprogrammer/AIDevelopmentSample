@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TETRIS - Classic & Modern</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="stars-bg"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="game-wrapper">
+    <header class="game-header">
+      <h1 class="logo">TETRIS<span class="logo-accent">JS</span></h1>
+      <div class="header-controls">
+        <button id="soundToggleBtn" class="icon-btn" title="サウンド切替 (M)">
+          <span id="soundIcon">🔊</span>
+        </button>
+        <button id="pauseBtn" class="icon-btn" title="一時停止 (P / Esc)">
+          <span id="pauseIcon">⏸️</span>
+        </button>
+        <button id="restartBtn" class="icon-btn" title="リスタート (R)">
+          <span>🔄</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="game-container">
+      <!-- 左サイドパネル: HOLD & STATS -->
+      <aside class="side-panel left-panel">
+        <div class="panel-box hold-box">
+          <h2 class="panel-title">HOLD</h2>
+          <div class="canvas-box">
+            <canvas id="holdCanvas" width="120" height="120"></canvas>
+          </div>
+          <span class="sub-tip">[C] / [Shift]</span>
+        </div>
+
+        <div class="panel-box stats-box">
+          <div class="stat-item">
+            <span class="stat-label">SCORE</span>
+            <span id="scoreDisplay" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">HIGH SCORE</span>
+            <span id="highScoreDisplay" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">LEVEL</span>
+            <span id="levelDisplay" class="stat-value">1</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">LINES</span>
+            <span id="linesDisplay" class="stat-value">0</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- メインフィールド -->
+      <section class="main-board-container">
+        <div class="board-glow-frame">
+          <canvas id="tetrisCanvas" width="300" height="600"></canvas>
+          
+          <!-- オーバーレイ: スタート・ポーズ・ゲームオーバー -->
+          <div id="boardOverlay" class="board-overlay">
+            <div id="overlayContent" class="overlay-card">
+              <h2 id="overlayTitle">TETRIS</h2>
+              <p id="overlayMessage">スペースキーまたはボタンを押してスタート</p>
+              <button id="overlayActionBtn" class="action-btn">GAME START</button>
+            </div>
+          </div>
+
+          <!-- エフェクト用メッセージバナー (TETRIS!, LEVEL UP! など) -->
+          <div id="bannerNotification" class="banner-notification"></div>
+        </div>
+
+        <!-- オンスクリーン・コントローラー（タッチ/マウス操作対応） -->
+        <div class="virtual-controller">
+          <div class="v-btn-row">
+            <button id="vBtnHold" class="v-btn v-btn-hold" title="HOLD">HOLD</button>
+            <button id="vBtnRotL" class="v-btn" title="左回転 (Z)">↺ Z</button>
+            <button id="vBtnRotR" class="v-btn" title="右回転 (↑/X)">↻ X</button>
+            <button id="vBtnHard" class="v-btn v-btn-hard" title="ハードドロップ">⚡ DROP</button>
+          </div>
+          <div class="v-btn-row">
+            <button id="vBtnLeft" class="v-btn v-btn-dir" title="左移動">◀</button>
+            <button id="vBtnDown" class="v-btn v-btn-dir" title="ソフトドロップ">▼</button>
+            <button id="vBtnRight" class="v-btn v-btn-dir" title="右移動">▶</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右サイドパネル: NEXT & 操作説明 -->
+      <aside class="side-panel right-panel">
+        <div class="panel-box next-box">
+          <h2 class="panel-title">NEXT</h2>
+          <div class="canvas-box next-canvas-box">
+            <canvas id="nextCanvas" width="120" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="panel-box guide-box">
+          <h2 class="panel-title">CONTROLS</h2>
+          <ul class="control-list">
+            <li><kbd>←</kbd> <kbd>→</kbd> : 移動</li>
+            <li><kbd>↑</kbd> / <kbd>X</kbd> : 右回転</li>
+            <li><kbd>Z</kbd> : 左回転</li>
+            <li><kbd>↓</kbd> : ソフトドロップ</li>
+            <li><kbd>Space</kbd> : ハードドロップ</li>
+            <li><kbd>C</kbd> / <kbd>Shift</kbd> : ホールド</li>
+            <li><kbd>P</kbd> / <kbd>Esc</kbd> : 一時停止</li>
+            <li><kbd>R</kbd> : リトライ</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="game-footer">
+      <p>Pure HTML5 Canvas &amp; Vanilla JavaScript &bull; Web Audio API Synthesizer</p>
+    </footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,2493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OUTRUN RUSH - Retro Pseudo-3D Racing Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background-color: #0b0d14;
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace, sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      touch-action: none;
+    }
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      max-width: 1024px;
+      max-height: 768px;
+      aspect-ratio: 4 / 3;
+      box-shadow: 0 0 60px rgba(255, 0, 128, 0.35), 0 0 30px rgba(0, 240, 255, 0.25);
+      border: 4px solid #1f2230;
+      border-radius: 10px;
+      background: #000;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    /* レトロCRT走査線エフェクト */
+    #crt-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 4px, 6px 100%;
+      z-index: 10;
+      border-radius: 6px;
+    }
+    /* CRTビネット/湾曲感 */
+    #crt-vignette {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      box-shadow: inset 0 0 90px rgba(0,0,0,0.65);
+      z-index: 11;
+    }
+    /* コントロール案内 / フッター */
+    #controls-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #bbb;
+      letter-spacing: 1px;
+      z-index: 20;
+      background: rgba(5, 5, 12, 0.75);
+      padding: 5px 14px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+      white-space: nowrap;
+      display: flex;
+      gap: 14px;
+    }
+    .key-badge {
+      color: #00f0ff;
+      font-weight: bold;
+    }
+    /* サウンドトグルボタン */
+    #sound-btn {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      z-index: 25;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #00f0ff;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    #sound-btn:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: #00f0ff;
+    }
+    /* モバイル・タッチ操作用バーチャルUI */
+    #touch-controls {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 15;
+      pointer-events: none;
+    }
+    .touch-btn {
+      pointer-events: auto;
+      position: absolute;
+      background: rgba(255, 255, 255, 0.12);
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-radius: 50%;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      backdrop-filter: blur(4px);
+      user-select: none;
+    }
+    .touch-btn:active {
+      background: rgba(255, 0, 128, 0.5);
+      border-color: #ff0080;
+    }
+    #btn-left { left: 20px; bottom: 25px; width: 66px; height: 66px; }
+    #btn-right { left: 98px; bottom: 25px; width: 66px; height: 66px; }
+    #btn-accel { right: 24px; bottom: 25px; width: 74px; height: 74px; border-color: #00f0ff; }
+    #btn-brake { right: 112px; bottom: 25px; width: 58px; height: 58px; border-color: #ff3333; font-size: 13px; }
+    #btn-gear-up { right: 24px; bottom: 115px; width: 56px; height: 44px; border-radius: 8px; font-size: 13px; }
+    #btn-gear-down { right: 92px; bottom: 115px; width: 56px; height: 44px; border-radius: 8px; font-size: 13px; }
+
+    @media (hover: none) and (pointer: coarse) {
+      #touch-controls { display: block; }
+      #controls-hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <canvas id="game-canvas" width="1024" height="768"></canvas>
+    <div id="crt-overlay"></div>
+    <div id="crt-vignette"></div>
+
+    <button id="sound-btn">SOUND: ON</button>
+
+    <div id="controls-hint">
+      <span><span class="key-badge">Z / Space</span>: アクセル</span>
+      <span><span class="key-badge">X</span>: ブレーキ</span>
+      <span><span class="key-badge">← / → (A / D)</span>: ハンドル</span>
+      <span><span class="key-badge">↑ / ↓ (W / S)</span>: ギア切替(LOW/HIGH)</span>
+      <span><span class="key-badge">M</span>: 消音切替</span>
+    </div>
+
+    <!-- モバイル向けタッチコントロール -->
+    <div id="touch-controls">
+      <div id="btn-left" class="touch-btn">◀</div>
+      <div id="btn-right" class="touch-btn">▶</div>
+      <div id="btn-accel" class="touch-btn">GAS</div>
+      <div id="btn-brake" class="touch-btn">BRK</div>
+      <div id="btn-gear-up" class="touch-btn">HIGH</div>
+      <div id="btn-gear-down" class="touch-btn">LOW</div>
+    </div>
+  </div>
+
+  <script>
+/**
+ * ============================================================================
+ * OUTRUN RUSH - RETRO PSEUDO-3D RACER
+ * 純粋なHTML5 Canvas 2D API & Web Audio APIによる完全プロシージャル実装
+ * ============================================================================
+ */
+
+// ==========================================
+// 1. 定数・物理設定 (CONFIG & CONSTANTS)
+// ==========================================
+const CONFIG = {
+  CANVAS_WIDTH: 1024,
+  CANVAS_HEIGHT: 768,
+  ROAD_WIDTH: 2000,
+  SEGMENT_LENGTH: 200,
+  RUMBLE_LENGTH: 3,
+  LANES: 3,
+  CAMERA_HEIGHT: 1000,
+  CAMERA_DEPTH: null, // 画角から計算 (約 0.84)
+  FIELD_OF_VIEW: 100,
+  DRAW_DISTANCE: 300,
+  FOG_DENSITY: 5,
+  FPS: 60,
+  
+  // 車体物理
+  MAX_SPEED_LOW: 145,     // km/h (LOWギア頭打ち)
+  MAX_SPEED_HIGH: 292,    // km/h (HIGHギア最高速)
+  OFF_ROAD_MAX_SPEED: 85, // 芝生走行時の頭打ち
+  ACCEL_LOW: 195,         // LOWギアの力強い低速加速
+  ACCEL_HIGH: 110,        // HIGHギアの高速加速
+  DECEL_COAST: -35,       // アクセルOFF時の自然減速
+  DECEL_BRAKE: -360,      // ブレーキ減速
+  DECEL_OFFROAD: -220,    // 芝生走行時の摩擦減速
+  CENTRIFUGAL: 0.36,      // カーブでの遠心力係数
+  STEER_SPEED: 2.25,      // ハンドリング応答性
+  CRASH_TIME: 2.5,        // 大破時の操作不能時間(秒)
+  INVULNERABLE_TIME: 1.5  // 復帰後の無敵点滅時間(秒)
+};
+CONFIG.CAMERA_DEPTH = 1 / Math.tan((CONFIG.FIELD_OF_VIEW / 2) * Math.PI / 180);
+
+// 色パレット（レトロアーケードスタイル）
+const COLORS = {
+  SKY: {
+    DAY: ['#0066ee', '#44aaff', '#b0e2ff'],
+    DESERT: ['#200030', '#772050', '#ff8833'],
+    SNOW: ['#283850', '#506c88', '#a0bcd4'],
+    NIGHT: ['#040414', '#10162e', '#18284e'],
+    VOLCANO: ['#280606', '#5e1406', '#c43e0e']
+  },
+  ROAD: {
+    LIGHT: { road: '#686868', grass: '#10aa10', rumble: '#eeeeee', lane: '#ffffff' },
+    DARK:  { road: '#5e5e5e', grass: '#009200', rumble: '#cc1111', lane: null },
+    // 砂漠
+    DESERT_LIGHT: { road: '#726355', grass: '#caa155', rumble: '#ffffff', lane: '#ffffff' },
+    DESERT_DARK:  { road: '#68594b', grass: '#b88d44', rumble: '#d45511', lane: null },
+    // 雪山
+    SNOW_LIGHT: { road: '#555e66', grass: '#e6edf5', rumble: '#ffffff', lane: '#ffffff' },
+    SNOW_DARK:  { road: '#4c555d', grass: '#cfdbe8', rumble: '#2255aa', lane: null },
+    // 夜間ネオン
+    NIGHT_LIGHT: { road: '#2a2a35', grass: '#0c1524', rumble: '#00f0ff', lane: '#ffffff' },
+    NIGHT_DARK:  { road: '#22222d', grass: '#080d17', rumble: '#ff0080', lane: null },
+    // 火山
+    VOLCANO_LIGHT: { road: '#443333', grass: '#221111', rumble: '#ff4400', lane: '#ffaa00' },
+    VOLCANO_DARK:  { road: '#382828', grass: '#180a0a', rumble: '#880000', lane: null }
+  }
+};
+
+// ==========================================
+// 2. プロシージャル WEB AUDIO サウンドエンジン
+// ==========================================
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.enabled = true;
+    this.engineOsc = null;
+    this.engineSub = null;
+    this.engineGain = null;
+    this.skidSource = null;
+    this.skidGain = null;
+    this.bgmPlaying = false;
+    this.bgmInterval = null;
+    this.bgmStep = 0;
+  }
+
+  init() {
+    if (this.ctx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new AudioContext();
+
+    // 1. エンジン音オシレーター
+    this.engineOsc = this.ctx.createOscillator();
+    this.engineSub = this.ctx.createOscillator();
+    this.engineGain = this.ctx.createGain();
+    this.engineFilter = this.ctx.createBiquadFilter();
+
+    this.engineOsc.type = 'sawtooth';
+    this.engineSub.type = 'triangle';
+    this.engineFilter.type = 'lowpass';
+    this.engineFilter.frequency.value = 600;
+
+    this.engineOsc.connect(this.engineFilter);
+    this.engineSub.connect(this.engineFilter);
+    this.engineFilter.connect(this.engineGain);
+    this.engineGain.connect(this.ctx.destination);
+
+    this.engineGain.gain.value = 0;
+    this.engineOsc.start();
+    this.engineSub.start();
+
+    // 2. タイヤスキール音用ノイズバッファ
+    const bufferSize = this.ctx.sampleRate * 2;
+    const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+    this.noiseBuffer = noiseBuffer;
+
+    this.skidGain = this.ctx.createGain();
+    this.skidFilter = this.ctx.createBiquadFilter();
+    this.skidFilter.type = 'bandpass';
+    this.skidFilter.frequency.value = 1200;
+    this.skidFilter.Q.value = 3;
+
+    this.skidGain.gain.value = 0;
+    this.skidGain.connect(this.ctx.destination);
+  }
+
+  resume() {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  toggleSound() {
+    this.enabled = !this.enabled;
+    const btn = document.getElementById('sound-btn');
+    if (btn) btn.textContent = `SOUND: ${this.enabled ? 'ON' : 'OFF'}`;
+
+    if (!this.enabled && this.ctx) {
+      if (this.engineGain) this.engineGain.gain.value = 0;
+      if (this.skidGain) this.skidGain.gain.value = 0;
+      this.stopBGM();
+    } else if (this.enabled && window.game && window.game.state === STATES.IN_RACE) {
+      this.startBGM();
+    }
+    return this.enabled;
+  }
+
+  updateEngine(speed, maxSpeed, gear) {
+    if (!this.ctx || !this.enabled) return;
+    this.resume();
+
+    if (speed <= 0) {
+      this.engineGain.gain.setTargetAtTime(0.02, this.ctx.currentTime, 0.1);
+      this.engineOsc.frequency.setTargetAtTime(45, this.ctx.currentTime, 0.1);
+      this.engineSub.frequency.setTargetAtTime(22.5, this.ctx.currentTime, 0.1);
+      return;
+    }
+
+    const ratio = gear === 'LOW' ? (speed / CONFIG.MAX_SPEED_LOW) : ((speed - 60) / (CONFIG.MAX_SPEED_HIGH - 60));
+    const normalized = Math.max(0.1, Math.min(1.15, ratio));
+    const baseFreq = gear === 'LOW' ? 55 + normalized * 160 : 70 + normalized * 170;
+
+    this.engineOsc.frequency.setTargetAtTime(baseFreq, this.ctx.currentTime, 0.05);
+    this.engineSub.frequency.setTargetAtTime(baseFreq * 0.5, this.ctx.currentTime, 0.05);
+    this.engineFilter.frequency.setTargetAtTime(400 + normalized * 1200, this.ctx.currentTime, 0.05);
+    this.engineGain.gain.setTargetAtTime(0.09 + normalized * 0.07, this.ctx.currentTime, 0.05);
+  }
+
+  playSkid(active) {
+    if (!this.ctx || !this.enabled) return;
+    if (active) {
+      if (!this.skidSource) {
+        this.skidSource = this.ctx.createBufferSource();
+        this.skidSource.buffer = this.noiseBuffer;
+        this.skidSource.loop = true;
+        this.skidSource.connect(this.skidFilter);
+        this.skidFilter.connect(this.skidGain);
+        this.skidSource.start();
+      }
+      this.skidGain.gain.setTargetAtTime(0.18, this.ctx.currentTime, 0.05);
+    } else {
+      if (this.skidGain) {
+        this.skidGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.08);
+      }
+    }
+  }
+
+  playShift() {
+    if (!this.ctx || !this.enabled) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(140, this.ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.13);
+  }
+
+  playCrash() {
+    if (!this.ctx || !this.enabled) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.7);
+
+    // ノイズバースト
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = this.noiseBuffer;
+    const noiseGain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.8);
+
+    noiseGain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.8);
+
+    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.7);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.ctx.destination);
+
+    osc.start();
+    noise.start();
+    osc.stop(this.ctx.currentTime + 0.8);
+    noise.stop(this.ctx.currentTime + 0.8);
+  }
+
+  playBeep(freq, duration = 0.1, type = 'square') {
+    if (!this.ctx || !this.enabled) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + duration);
+  }
+
+  playJingleWin() {
+    if (!this.ctx || !this.enabled) return;
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      setTimeout(() => this.playBeep(freq, 0.25, 'triangle'), idx * 160);
+    });
+  }
+
+  // 80s チップチューン風シンセウェーブ BGM
+  startBGM() {
+    if (!this.ctx || !this.enabled || this.bgmPlaying) return;
+    this.bgmPlaying = true;
+    this.bgmStep = 0;
+    
+    // ベースライン & コード進行 (Am - F - G - Em)
+    const bassline = [
+      220, 220, 440, 220, 220, 220, 440, 220, // A
+      174.6, 174.6, 349.2, 174.6, 174.6, 174.6, 349.2, 174.6, // F
+      196, 196, 392, 196, 196, 196, 392, 196, // G
+      164.8, 164.8, 329.6, 164.8, 196, 220, 246.9, 196 // E
+    ];
+
+    const leadMelody = [
+      440, 0, 523.25, 659.25, 523.25, 0, 440, 0,
+      349.2, 0, 440, 523.25, 440, 0, 349.2, 0,
+      392, 0, 493.88, 587.33, 493.88, 0, 392, 0,
+      659.25, 587.33, 523.25, 493.88, 523.25, 440, 392, 440
+    ];
+
+    this.bgmInterval = setInterval(() => {
+      if (!this.enabled || !this.bgmPlaying) return;
+      const bFreq = bassline[this.bgmStep % bassline.length];
+      const mFreq = leadMelody[this.bgmStep % leadMelody.length];
+
+      // ベース音
+      if (bFreq > 0) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(bFreq * 0.5, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.13);
+      }
+
+      // リードメロディ
+      if (mFreq > 0 && (this.bgmStep % 2 === 0)) {
+        const mOsc = this.ctx.createOscillator();
+        const mGain = this.ctx.createGain();
+        mOsc.type = 'square';
+        mOsc.frequency.setValueAtTime(mFreq, this.ctx.currentTime);
+        mGain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+        mGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.22);
+        mOsc.connect(mGain);
+        mGain.connect(this.ctx.destination);
+        mOsc.start();
+        mOsc.stop(this.ctx.currentTime + 0.23);
+      }
+
+      this.bgmStep++;
+    }, 130);
+  }
+
+  stopBGM() {
+    this.bgmPlaying = false;
+    if (this.bgmInterval) {
+      clearInterval(this.bgmInterval);
+      this.bgmInterval = null;
+    }
+  }
+}
+
+// ==========================================
+// 3. プロシージャル スプライト & ベクターグラフィックス
+// ==========================================
+class ProceduralGraphics {
+  constructor() {
+    this.skyOffset = 0;
+    this.hillOffset = 0;
+    this.cityOffset = 0;
+  }
+
+  // 背景描画（空、太陽/月、山脈、遠景ビル/木々の多重パララックス）
+  drawBackground(ctx, stage, playerX, baseCurve, speedPercent, dt) {
+    const w = CONFIG.CANVAS_WIDTH;
+    const h = CONFIG.CANVAS_HEIGHT;
+    const colors = COLORS.SKY[stage.skyTheme] || COLORS.SKY.DAY;
+
+    // 1. 空グラデーション
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.58);
+    skyGrad.addColorStop(0, colors[0]);
+    skyGrad.addColorStop(0.6, colors[1]);
+    skyGrad.addColorStop(1, colors[2]);
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, w, h * 0.6);
+
+    // 太陽 / 月
+    if (stage.skyTheme === 'NIGHT') {
+      // 月
+      ctx.fillStyle = '#fffae0';
+      ctx.beginPath();
+      ctx.arc(w * 0.8, h * 0.18, 38, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = colors[0];
+      ctx.beginPath();
+      ctx.arc(w * 0.78, h * 0.16, 32, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (stage.skyTheme === 'VOLCANO') {
+      // 不気味な巨大レッドサン
+      ctx.fillStyle = '#ff2200';
+      ctx.shadowColor = '#ff5500';
+      ctx.shadowBlur = 40;
+      ctx.beginPath();
+      ctx.arc(w * 0.5, h * 0.25, 46, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    } else {
+      // 燦然と輝く太陽
+      const sunGrad = ctx.createRadialGradient(w * 0.25, h * 0.18, 10, w * 0.25, h * 0.18, 65);
+      sunGrad.addColorStop(0, '#ffffff');
+      sunGrad.addColorStop(0.4, '#fff066');
+      sunGrad.addColorStop(1, 'rgba(255, 200, 0, 0)');
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(w * 0.25, h * 0.18, 65, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // パララックスオフセット更新
+    const curveEffect = baseCurve * speedPercent * 1.6;
+    const steerEffect = (playerX * 0.4);
+
+    this.skyOffset = (this.skyOffset + curveEffect * 0.15) % w;
+    this.hillOffset = (this.hillOffset + curveEffect * 0.45) % w;
+    this.cityOffset = (this.cityOffset + curveEffect * 0.95) % w;
+
+    // 2. 遠景レイヤー（山脈 / 摩天楼 / 火山）
+    this.renderHills(ctx, w, h * 0.38, this.hillOffset + steerEffect * 30, stage.bgTheme);
+
+    // 3. 中景レイヤー（木立 / 低層ビル群 / 砂丘）
+    this.renderMidground(ctx, w, h * 0.48, this.cityOffset + steerEffect * 70, stage.bgTheme);
+  }
+
+  renderHills(ctx, w, horizonY, offset, theme) {
+    ctx.save();
+    ctx.translate(-((offset % w + w) % w), 0);
+
+    const drawSection = () => {
+      ctx.beginPath();
+      ctx.moveTo(0, horizonY);
+      if (theme === 'DESERT') {
+        ctx.fillStyle = '#6e2b20';
+        ctx.lineTo(w * 0.15, horizonY - 70);
+        ctx.lineTo(w * 0.3, horizonY - 65);
+        ctx.lineTo(w * 0.45, horizonY - 110);
+        ctx.lineTo(w * 0.6, horizonY - 50);
+        ctx.lineTo(w * 0.8, horizonY - 95);
+        ctx.lineTo(w, horizonY);
+      } else if (theme === 'SNOW') {
+        ctx.fillStyle = '#3a4e69';
+        ctx.lineTo(w * 0.2, horizonY - 120);
+        ctx.lineTo(w * 0.4, horizonY - 40);
+        ctx.lineTo(w * 0.6, horizonY - 140);
+        ctx.lineTo(w * 0.85, horizonY - 70);
+        ctx.lineTo(w, horizonY);
+      } else if (theme === 'NIGHT') {
+        ctx.fillStyle = '#11152a';
+        // 摩天楼シルエット
+        for (let bx = 0; bx < w; bx += 45) {
+          const bh = 50 + ((bx * 37) % 90);
+          ctx.lineTo(bx, horizonY - bh);
+          ctx.lineTo(bx + 40, horizonY - bh);
+        }
+        ctx.lineTo(w, horizonY);
+      } else if (theme === 'VOLCANO') {
+        ctx.fillStyle = '#381010';
+        ctx.lineTo(w * 0.3, horizonY - 130);
+        ctx.lineTo(w * 0.38, horizonY - 120);
+        ctx.lineTo(w * 0.5, horizonY - 60);
+        ctx.lineTo(w * 0.75, horizonY - 140);
+        ctx.lineTo(w, horizonY);
+      } else {
+        // COASTAL
+        ctx.fillStyle = '#225e36';
+        ctx.bezierCurveTo(w * 0.25, horizonY - 80, w * 0.35, horizonY - 30, w * 0.5, horizonY - 60);
+        ctx.bezierCurveTo(w * 0.7, horizonY - 90, w * 0.85, horizonY - 40, w, horizonY);
+      }
+      ctx.lineTo(w, horizonY + 100);
+      ctx.lineTo(0, horizonY + 100);
+      ctx.closePath();
+      ctx.fill();
+    };
+
+    drawSection();
+    ctx.translate(w, 0);
+    drawSection();
+    ctx.restore();
+  }
+
+  renderMidground(ctx, w, horizonY, offset, theme) {
+    ctx.save();
+    ctx.translate(-((offset % w + w) % w), 0);
+
+    const drawSection = () => {
+      ctx.beginPath();
+      ctx.moveTo(0, horizonY);
+      if (theme === 'NIGHT') {
+        ctx.fillStyle = '#1b1e38';
+        for (let bx = 0; bx < w; bx += 32) {
+          const bh = 30 + ((bx * 19) % 65);
+          ctx.lineTo(bx, horizonY - bh);
+          ctx.lineTo(bx + 26, horizonY - bh);
+        }
+        ctx.lineTo(w, horizonY);
+      } else if (theme === 'DESERT') {
+        ctx.fillStyle = '#8f4f2b';
+        ctx.bezierCurveTo(w * 0.2, horizonY - 35, w * 0.4, horizonY - 10, w * 0.6, horizonY - 45);
+        ctx.bezierCurveTo(w * 0.8, horizonY - 15, w * 0.9, horizonY - 30, w, horizonY);
+      } else if (theme === 'SNOW') {
+        ctx.fillStyle = '#657e9b';
+        ctx.lineTo(w * 0.25, horizonY - 45);
+        ctx.lineTo(w * 0.5, horizonY - 20);
+        ctx.lineTo(w * 0.75, horizonY - 50);
+        ctx.lineTo(w, horizonY);
+      } else {
+        // COASTAL & VOLCANO
+        ctx.fillStyle = theme === 'VOLCANO' ? '#4d1c16' : '#2d7a46';
+        ctx.bezierCurveTo(w * 0.3, horizonY - 40, w * 0.6, horizonY - 15, w * 0.8, horizonY - 45);
+        ctx.lineTo(w, horizonY);
+      }
+      ctx.lineTo(w, horizonY + 60);
+      ctx.lineTo(0, horizonY + 60);
+      ctx.closePath();
+      ctx.fill();
+    };
+
+    drawSection();
+    ctx.translate(w, 0);
+    drawSection();
+    ctx.restore();
+  }
+
+  // プレイヤー車描画（OutRun風レッドスポーツカー）
+  drawPlayerCar(ctx, x, y, scale, steer, isBraking, isCrash, crashTime, invulnerableTimer, isOffRoad, speed) {
+    // 復帰後の無敵時間点滅
+    if (invulnerableTimer > 0 && Math.floor(Date.now() / 60) % 2 === 0) {
+      return;
+    }
+
+    ctx.save();
+
+    // 芝生走行時の車体バイブレーション
+    let shakeY = 0;
+    if (isOffRoad && speed > 20) {
+      shakeY = (Math.sin(Date.now() * 0.05) * 4);
+    }
+    ctx.translate(x, y + shakeY);
+
+    // クラッシュ演出：激しいスピン・跳ね上がり・破片
+    if (isCrash) {
+      const progress = (CONFIG.CRASH_TIME - crashTime) / CONFIG.CRASH_TIME;
+      const bounceY = -Math.sin(progress * Math.PI) * 230;
+      const angle = progress * Math.PI * 6;
+      ctx.translate(0, bounceY);
+      ctx.rotate(angle);
+
+      // 飛び散る火花と破片パーティクル
+      this.drawCrashDebris(ctx, progress);
+    }
+
+    const w = 150 * scale;
+    const h = 80 * scale;
+
+    // 左右ロール変形
+    const roll = steer * 10 * Math.PI / 180;
+    ctx.rotate(roll);
+
+    // 影
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(0, 5 * scale, w * 0.58, h * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 1. 幅広リアタイヤ
+    ctx.fillStyle = '#151515';
+    // 左タイヤ
+    ctx.fillRect(-w * 0.52, -h * 0.28, w * 0.22, h * 0.42);
+    // 右タイヤ
+    ctx.fillRect(w * 0.30, -h * 0.28, w * 0.22, h * 0.42);
+    // ホイール
+    ctx.fillStyle = '#aaa';
+    ctx.fillRect(-w * 0.48, -h * 0.22, w * 0.14, h * 0.3);
+    ctx.fillRect(w * 0.34, -h * 0.22, w * 0.14, h * 0.3);
+
+    // 2. メインボディ（赤い流線型フェラーリ調）
+    ctx.fillStyle = '#dc0f1e';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.46, -h * 0.1);
+    ctx.lineTo(-w * 0.42, -h * 0.48);
+    ctx.lineTo(-w * 0.32, -h * 0.72);
+    ctx.lineTo(w * 0.32, -h * 0.72);
+    ctx.lineTo(w * 0.42, -h * 0.48);
+    ctx.lineTo(w * 0.46, -h * 0.1);
+    ctx.closePath();
+    ctx.fill();
+
+    // ボディハイライト & シャドウ
+    const bodyGrad = ctx.createLinearGradient(0, -h * 0.75, 0, 0);
+    bodyGrad.addColorStop(0, 'rgba(255, 120, 120, 0.6)');
+    bodyGrad.addColorStop(0.5, 'rgba(220, 20, 30, 0.8)');
+    bodyGrad.addColorStop(1, 'rgba(120, 0, 10, 0.9)');
+    ctx.fillStyle = bodyGrad;
+    ctx.fill();
+
+    // 3. キャビン（オープンカー/運転席）
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.28, -h * 0.72);
+    ctx.lineTo(-w * 0.22, -h * 1.05);
+    ctx.lineTo(w * 0.22, -h * 1.05);
+    ctx.lineTo(w * 0.28, -h * 0.72);
+    ctx.closePath();
+    ctx.fill();
+
+    // フロントガラスの反射
+    ctx.fillStyle = 'rgba(100, 200, 255, 0.45)';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.25, -h * 0.75);
+    ctx.lineTo(-w * 0.2, -h * 1.0);
+    ctx.lineTo(w * 0.2, -h * 1.0);
+    ctx.lineTo(w * 0.25, -h * 0.75);
+    ctx.closePath();
+    ctx.fill();
+
+    // ドライバー（青）＆助手席ナビゲーター（ブロンド）
+    ctx.fillStyle = '#2266ee';
+    ctx.beginPath();
+    ctx.arc(-w * 0.11, -h * 0.86, w * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#eebb33';
+    ctx.beginPath();
+    ctx.arc(w * 0.11, -h * 0.84, w * 0.072, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 4. リアコンビネーションランプ（テールランプ）
+    const lampGlow = isBraking ? 'rgba(255, 30, 30, 1.0)' : 'rgba(180, 20, 20, 0.75)';
+    ctx.fillStyle = lampGlow;
+    // 左ランプ
+    ctx.fillRect(-w * 0.42, -h * 0.38, w * 0.2, h * 0.16);
+    // 右ランプ
+    ctx.fillRect(w * 0.22, -h * 0.38, w * 0.2, h * 0.16);
+
+    if (isBraking) {
+      ctx.shadowColor = '#ff2222';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#ffaaaa';
+      ctx.fillRect(-w * 0.4, -h * 0.35, w * 0.16, h * 0.1);
+      ctx.fillRect(w * 0.24, -h * 0.35, w * 0.16, h * 0.1);
+      ctx.shadowBlur = 0;
+    }
+
+    // 5. デュアルマフラー & 排気炎（アフターファイア）
+    ctx.fillStyle = '#080808';
+    ctx.fillRect(-w * 0.14, -h * 0.32, w * 0.28, h * 0.14);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-w * 0.11, -h * 0.3, w * 0.22, h * 0.1);
+
+    // マフラーエキゾースト
+    ctx.fillStyle = '#555';
+    ctx.beginPath();
+    ctx.arc(-w * 0.28, -h * 0.15, w * 0.04, 0, Math.PI * 2);
+    ctx.arc(w * 0.28, -h * 0.15, w * 0.04, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 高速走行時のマフラーアフターファイア炎
+    if (speed > 160 && Math.random() < 0.35 && !isCrash) {
+      ctx.fillStyle = '#00f0ff';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(-w * 0.28, -h * 0.15 + 8, 7 * scale, 0, Math.PI * 2);
+      ctx.arc(w * 0.28, -h * 0.15 + 8, 7 * scale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // 芝生走行時の土煙エフェクト
+    if (isOffRoad && speed > 30 && !isCrash) {
+      ctx.fillStyle = 'rgba(180, 140, 80, 0.4)';
+      for (let i = 0; i < 4; i++) {
+        const dustX = (Math.random() - 0.5) * w * 1.1;
+        const dustY = -h * 0.2 + Math.random() * 20;
+        ctx.beginPath();
+        ctx.arc(dustX, dustY, 8 + Math.random() * 12, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // クラッシュ時の破片・炎エフェクト
+  drawCrashDebris(ctx, progress) {
+    const numDebris = 14;
+    for (let i = 0; i < numDebris; i++) {
+      const angle = (i / numDebris) * Math.PI * 2;
+      const dist = progress * 170 * (0.8 + (i % 3) * 0.3);
+      const px = Math.cos(angle) * dist;
+      const py = Math.sin(angle) * dist + (progress * progress * 90);
+      
+      ctx.fillStyle = i % 2 === 0 ? '#111' : (i % 3 === 0 ? '#ff3300' : '#ffcc00');
+      ctx.beginPath();
+      ctx.arc(px, py, 6 * (1 - progress * 0.5), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // NPC車描画
+  drawNPCCar(ctx, car, x, y, scale, clipY) {
+    const w = 150 * scale;
+    const h = 80 * scale;
+
+    // 完全に丘の影に隠れている場合は早期リターン
+    if (clipY && (y - h >= clipY)) return;
+
+    ctx.save();
+
+    // 丘による部分的な遮蔽（オクルージョン）
+    if (clipY && clipY < y) {
+      ctx.beginPath();
+      ctx.rect(0, 0, CONFIG.CANVAS_WIDTH, clipY);
+      ctx.clip();
+    }
+
+    ctx.translate(x, y);
+
+    // 影
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.beginPath();
+    ctx.ellipse(0, 4 * scale, w * 0.58, h * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 1. 幅広リアタイヤ
+    ctx.fillStyle = '#151515';
+    ctx.fillRect(-w * 0.52, -h * 0.28, w * 0.22, h * 0.4);
+    ctx.fillRect(w * 0.30, -h * 0.28, w * 0.22, h * 0.4);
+    // ホイール
+    ctx.fillStyle = '#888';
+    ctx.fillRect(-w * 0.48, -h * 0.22, w * 0.14, h * 0.28);
+    ctx.fillRect(w * 0.34, -h * 0.22, w * 0.14, h * 0.28);
+
+    // 2. メインボディ
+    const bodyColor = car.color || '#0077ff';
+    ctx.fillStyle = bodyColor;
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.46, -h * 0.1);
+    ctx.lineTo(-w * 0.42, -h * 0.48);
+    ctx.lineTo(-w * 0.32, -h * 0.72);
+    ctx.lineTo(w * 0.32, -h * 0.72);
+    ctx.lineTo(w * 0.42, -h * 0.48);
+    ctx.lineTo(w * 0.46, -h * 0.1);
+    ctx.closePath();
+    ctx.fill();
+
+    // ボディ陰影（立体グラデーション）
+    const grad = ctx.createLinearGradient(0, -h * 0.72, 0, 0);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
+    grad.addColorStop(0.5, 'rgba(0, 0, 0, 0.05)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0.55)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // 3. リアスポイラー（ウイング）
+    ctx.fillStyle = '#111';
+    ctx.fillRect(-w * 0.42, -h * 0.76, w * 0.84, h * 0.08);
+    ctx.fillRect(-w * 0.34, -h * 0.74, w * 0.08, h * 0.12);
+    ctx.fillRect(w * 0.26, -h * 0.74, w * 0.08, h * 0.12);
+
+    // 4. キャビン / ウィンドウ
+    ctx.fillStyle = '#151824';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.28, -h * 0.72);
+    ctx.lineTo(-w * 0.22, -h * 1.02);
+    ctx.lineTo(w * 0.22, -h * 1.02);
+    ctx.lineTo(w * 0.28, -h * 0.72);
+    ctx.closePath();
+    ctx.fill();
+
+    // リアガラス反射ハイライト
+    ctx.fillStyle = 'rgba(120, 200, 255, 0.4)';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.25, -h * 0.75);
+    ctx.lineTo(-w * 0.20, -h * 0.98);
+    ctx.lineTo(w * 0.20, -h * 0.98);
+    ctx.lineTo(w * 0.25, -h * 0.75);
+    ctx.closePath();
+    ctx.fill();
+
+    // 5. テールランプ（発光）
+    ctx.fillStyle = '#ff1111';
+    ctx.fillRect(-w * 0.40, -h * 0.40, w * 0.18, h * 0.16);
+    ctx.fillRect(w * 0.22, -h * 0.40, w * 0.18, h * 0.16);
+
+    // ウィンカーランプ（アンバー）
+    ctx.fillStyle = '#ffaa00';
+    ctx.fillRect(-w * 0.40, -h * 0.34, w * 0.06, h * 0.09);
+    ctx.fillRect(w * 0.34, -h * 0.34, w * 0.06, h * 0.09);
+
+    // 6. ナンバープレート & デュアルエキゾースト
+    ctx.fillStyle = '#080808';
+    ctx.fillRect(-w * 0.14, -h * 0.32, w * 0.28, h * 0.14);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-w * 0.11, -h * 0.30, w * 0.22, h * 0.10);
+
+    ctx.fillStyle = '#444';
+    ctx.beginPath();
+    ctx.arc(-w * 0.26, -h * 0.14, w * 0.04, 0, Math.PI * 2);
+    ctx.arc(w * 0.26, -h * 0.14, w * 0.04, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  // コース脇スプライト（ヤシの木、看板、サボテン、岩、ゲートなど）
+  drawSprite(ctx, type, x, y, scale, clipY) {
+    const s = scale;
+    // 完全に丘の影なら早期リターン
+    if (clipY && (y - 200 * s >= clipY)) return;
+
+    ctx.save();
+    // 丘による部分的な遮蔽
+    if (clipY && clipY < y) {
+      ctx.beginPath();
+      ctx.rect(0, 0, CONFIG.CANVAS_WIDTH, clipY);
+      ctx.clip();
+    }
+    ctx.translate(x, y);
+
+    switch (type) {
+      case 'PALM_TREE':
+        this.renderPalmTree(ctx, s);
+        break;
+      case 'BILLBOARD_OUTRUN':
+        this.renderBillboard(ctx, s, 'OUT RUN', '#ff0080', '#00f0ff');
+        break;
+      case 'BILLBOARD_TURBO':
+        this.renderBillboard(ctx, s, 'SUPER TURBO', '#ffaa00', '#ff0000');
+        break;
+      case 'BILLBOARD_CHECK':
+        this.renderBillboard(ctx, s, 'CHECKPOINT', '#ffffff', '#22bb33');
+        break;
+      case 'CACTUS':
+        this.renderCactus(ctx, s);
+        break;
+      case 'ROCK':
+        this.renderRock(ctx, s);
+        break;
+      case 'SNOW_TREE':
+        this.renderSnowTree(ctx, s);
+        break;
+      case 'STREET_LIGHT':
+        this.renderStreetLight(ctx, s);
+        break;
+      case 'START_GATE':
+        this.renderStartGate(ctx, s);
+        break;
+    }
+
+    ctx.restore();
+  }
+
+  renderPalmTree(ctx, s) {
+    const h = 260 * s;
+    const w = 160 * s;
+
+    // 幹
+    ctx.strokeStyle = '#6b4122';
+    ctx.lineWidth = 14 * s;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(15 * s, -h * 0.5, -20 * s, -h);
+    ctx.stroke();
+
+    // 葉
+    ctx.fillStyle = '#1e7822';
+    const topX = -20 * s;
+    const topY = -h;
+    for (let a = -0.8; a <= 0.8; a += 0.3) {
+      ctx.beginPath();
+      ctx.moveTo(topX, topY);
+      ctx.quadraticCurveTo(topX + Math.sin(a) * w * 0.7, topY - 30 * s + Math.cos(a) * 20 * s, topX + Math.sin(a) * w, topY + Math.cos(a) * 40 * s);
+      ctx.lineTo(topX, topY);
+      ctx.fill();
+    }
+  }
+
+  renderBillboard(ctx, s, text, col1, col2) {
+    const w = 240 * s;
+    const h = 130 * s;
+
+    // 支柱2本
+    ctx.fillStyle = '#888';
+    ctx.fillRect(-w * 0.35, -h * 0.7, 10 * s, h * 0.7);
+    ctx.fillRect(w * 0.35 - 10 * s, -h * 0.7, 10 * s, h * 0.7);
+
+    // 看板ボード
+    ctx.fillStyle = '#111';
+    ctx.fillRect(-w * 0.5, -h * 1.4, w, h * 0.75);
+    ctx.strokeStyle = col1;
+    ctx.lineWidth = 4 * s;
+    ctx.strokeRect(-w * 0.5, -h * 1.4, w, h * 0.75);
+
+    // ネオン文字
+    ctx.fillStyle = col2;
+    ctx.font = `bold ${Math.round(26 * s)}px "Courier New", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = col1;
+    ctx.shadowBlur = 12 * s;
+    ctx.fillText(text, 0, -h * 1.02);
+    ctx.shadowBlur = 0;
+  }
+
+  renderCactus(ctx, s) {
+    const h = 160 * s;
+    ctx.strokeStyle = '#2d6a34';
+    ctx.lineWidth = 16 * s;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -h);
+    ctx.moveTo(0, -h * 0.45);
+    ctx.lineTo(-28 * s, -h * 0.45);
+    ctx.lineTo(-28 * s, -h * 0.8);
+    ctx.moveTo(0, -h * 0.6);
+    ctx.lineTo(28 * s, -h * 0.6);
+    ctx.lineTo(28 * s, -h * 0.95);
+    ctx.stroke();
+  }
+
+  renderRock(ctx, s) {
+    const w = 120 * s;
+    const h = 80 * s;
+    ctx.fillStyle = '#655850';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.5, 0);
+    ctx.lineTo(-w * 0.4, -h * 0.7);
+    ctx.lineTo(-w * 0.1, -h);
+    ctx.lineTo(w * 0.35, -h * 0.85);
+    ctx.lineTo(w * 0.5, 0);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  renderSnowTree(ctx, s) {
+    const h = 200 * s;
+    const w = 110 * s;
+    ctx.fillStyle = '#3a2010';
+    ctx.fillRect(-8 * s, -h * 0.2, 16 * s, h * 0.2);
+    ctx.fillStyle = '#224a35';
+    for (let i = 0; i < 3; i++) {
+      const segY = -h * 0.2 - i * (h * 0.25);
+      const segW = w * (1 - i * 0.25);
+      ctx.beginPath();
+      ctx.moveTo(-segW * 0.5, segY);
+      ctx.lineTo(0, segY - h * 0.35);
+      ctx.lineTo(segW * 0.5, segY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#e8f0f8';
+      ctx.beginPath();
+      ctx.moveTo(-segW * 0.45, segY);
+      ctx.lineTo(0, segY - h * 0.2);
+      ctx.lineTo(segW * 0.45, segY);
+      ctx.lineTo(0, segY - 8 * s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#224a35';
+    }
+  }
+
+  renderStreetLight(ctx, s) {
+    const h = 240 * s;
+    ctx.strokeStyle = '#777';
+    ctx.lineWidth = 6 * s;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -h);
+    ctx.lineTo(35 * s, -h);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffff66';
+    ctx.shadowColor = '#ffff00';
+    ctx.shadowBlur = 15 * s;
+    ctx.beginPath();
+    ctx.arc(35 * s, -h + 4 * s, 10 * s, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  renderStartGate(ctx, s) {
+    const w = 600 * s;
+    const h = 280 * s;
+    ctx.fillStyle = '#222';
+    ctx.fillRect(-w * 0.5, -h, 24 * s, h);
+    ctx.fillRect(w * 0.5 - 24 * s, -h, 24 * s, h);
+
+    ctx.fillStyle = '#ff2222';
+    ctx.fillRect(-w * 0.5, -h, w, 50 * s);
+
+    const numChecks = 16;
+    const cw = w / numChecks;
+    for (let i = 0; i < numChecks; i++) {
+      ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#000000';
+      ctx.fillRect(-w * 0.5 + i * cw, -h + 10 * s, cw, 30 * s);
+    }
+
+    ctx.fillStyle = '#ffff00';
+    ctx.font = `bold ${Math.round(28 * s)}px "Courier New", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('START / FINISH', 0, -h + 34 * s);
+  }
+
+  // 2Dコース全体マップ描画（Pre-Race Screen用）
+  drawCourseMap2D(ctx, road, cx, cy, boxW, boxH) {
+    if (!road || road.segments.length === 0) return;
+    const segments = road.segments;
+
+    // コース形状の積分
+    let angle = 0;
+    let curX = 0;
+    let curY = 0;
+    const pts = [];
+    let minX = 0, maxX = 0, minY = 0, maxY = 0;
+
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      angle += (seg.curve * 0.024);
+      curX += Math.sin(angle) * 5;
+      curY -= Math.cos(angle) * 5; // Y上方向を進行方向
+      pts.push({ x: curX, y: curY });
+      minX = Math.min(minX, curX);
+      maxX = Math.max(maxX, curX);
+      minY = Math.min(minY, curY);
+      maxY = Math.max(maxY, curY);
+    }
+
+    const spanX = Math.max(10, maxX - minX);
+    const spanY = Math.max(10, maxY - minY);
+    const scale = Math.min((boxW - 60) / spanX, (boxH - 60) / spanY);
+
+    ctx.save();
+    // 背景ボックス
+    ctx.fillStyle = 'rgba(10, 15, 25, 0.75)';
+    ctx.fillRect(cx - boxW * 0.5, cy - boxH * 0.5, boxW, boxH);
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx - boxW * 0.5, cy - boxH * 0.5, boxW, boxH);
+
+    ctx.fillStyle = '#00f0ff';
+    ctx.font = 'bold 15px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('--- COURSE MAP PROFILE ---', cx, cy - boxH * 0.5 + 24);
+
+    // マップパスのセンタリング描画
+    ctx.translate(cx - ((minX + maxX) * 0.5) * scale, cy + 12 - ((minY + maxY) * 0.5) * scale);
+
+    // コーストラック（外枠ネオングロー）
+    ctx.strokeStyle = '#ff0080';
+    ctx.shadowColor = '#ff0080';
+    ctx.shadowBlur = 12;
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    for (let i = 0; i < pts.length; i++) {
+      const px = pts[i].x * scale;
+      const py = pts[i].y * scale;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // コーストラック（コア白線）
+    ctx.strokeStyle = '#ffffff';
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // START地点（緑丸）
+    ctx.fillStyle = '#00ff66';
+    ctx.shadowColor = '#00ff66';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(pts[0].x * scale, pts[0].y * scale, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // FINISH地点（チェッカー/赤丸）
+    const finishIdx = pts.length - 20;
+    ctx.fillStyle = '#ffff00';
+    ctx.shadowColor = '#ffff00';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(pts[finishIdx].x * scale, pts[finishIdx].y * scale, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  // レース中HUD用ミニレーダー
+  drawMiniRadar(ctx, road, playerZ, npcs, rx, ry, rw, rh) {
+    if (!road || road.segments.length === 0) return;
+    const segments = road.segments;
+    const trackLen = road.trackLength;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(rx, ry, rw, rh);
+    ctx.strokeStyle = '#444';
+    ctx.strokeRect(rx, ry, rw, rh);
+
+    // 縦型プログレスマップ
+    // ゴールが上、スタートが下
+    const margin = 12;
+    const lineX = rx + rw * 0.5;
+    const startY = ry + rh - margin;
+    const endY = ry + margin;
+
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(lineX, startY);
+    ctx.lineTo(lineX, endY);
+    ctx.stroke();
+
+    // コースのカーブのうねりを描画
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < segments.length; i += 10) {
+      const seg = segments[i];
+      const prog = (i / segments.length);
+      const py = startY - prog * (startY - endY);
+      const px = lineX + (seg.curve * 6);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // NPC位置
+    for (let i = 0; i < npcs.length; i++) {
+      const car = npcs[i];
+      const prog = (car.z % trackLen) / trackLen;
+      const cy = startY - prog * (startY - endY);
+      const seg = road.findSegment(car.z);
+      const cx = lineX + (seg ? seg.curve * 6 : 0) + car.offset * 6;
+      ctx.fillStyle = car.color || '#ffaa00';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 自車位置（赤点滅）
+    const playerProg = (playerZ % trackLen) / trackLen;
+    const playerPy = startY - playerProg * (startY - endY);
+    const pSeg = road.findSegment(playerZ);
+    const playerPx = lineX + (pSeg ? pSeg.curve * 6 : 0);
+
+    ctx.fillStyle = Math.floor(Date.now() / 150) % 2 === 0 ? '#ff0000' : '#ffffff';
+    ctx.shadowColor = '#ff0000';
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(playerPx, playerPy, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // FINISHラベル
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ffff00';
+    ctx.font = 'bold 10px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('GOAL', lineX, endY - 3);
+
+    ctx.restore();
+  }
+}
+
+// ==========================================
+// 4. コース & セグメント管理 (ROAD ENGINE)
+// ==========================================
+class Segment {
+  constructor(index) {
+    this.index = index;
+    this.p1 = { world: { x: 0, y: 0, z: 0 }, camera: {}, screen: {} };
+    this.p2 = { world: { x: 0, y: 0, z: 0 }, camera: {}, screen: {} };
+    this.curve = 0;
+    this.sprites = [];
+    this.cars = [];
+    this.color = null;
+    this.clip = 0;
+    this.looped = false;
+  }
+}
+
+class Road {
+  constructor() {
+    this.segments = [];
+    this.trackLength = 0;
+  }
+
+  reset() {
+    this.segments = [];
+    this.trackLength = 0;
+  }
+
+  addSegment(curve, y, colorSet) {
+    const n = this.segments.length;
+    const segment = new Segment(n);
+    segment.curve = curve;
+    segment.p1.world.y = this.getLastY();
+    segment.p2.world.y = y;
+    segment.p1.world.z = n * CONFIG.SEGMENT_LENGTH;
+    segment.p2.world.z = (n + 1) * CONFIG.SEGMENT_LENGTH;
+    segment.color = Math.floor(n / CONFIG.RUMBLE_LENGTH) % 2 ? colorSet.LIGHT : colorSet.DARK;
+    this.segments.push(segment);
+  }
+
+  getLastY() {
+    return this.segments.length === 0 ? 0 : this.segments[this.segments.length - 1].p2.world.y;
+  }
+
+  addStraight(num, colorSet) {
+    num = num || 50;
+    const currentY = this.getLastY();
+    for (let i = 0; i < num; i++) {
+      this.addSegment(0, currentY, colorSet);
+    }
+  }
+
+  addCurve(num, curve, colorSet, endY) {
+    num = num || 50;
+    const startY = this.getLastY();
+    endY = endY !== undefined ? endY : startY;
+    for (let i = 0; i < num; i++) {
+      const t = i / num;
+      const easedCurve = curve * Math.sin(t * Math.PI);
+      const y = startY + (endY - startY) * (0.5 - 0.5 * Math.cos(t * Math.PI));
+      this.addSegment(easedCurve, y, colorSet);
+    }
+  }
+
+  addHill(num, height, colorSet) {
+    num = num || 60;
+    const startY = this.getLastY();
+    const endY = startY + height;
+    for (let i = 0; i < num; i++) {
+      const t = i / num;
+      const y = startY + (endY - startY) * (0.5 - 0.5 * Math.cos(t * Math.PI));
+      this.addSegment(0, y, colorSet);
+    }
+  }
+
+  addSCurves(colorSet) {
+    this.addCurve(45, 2.5, colorSet);
+    this.addCurve(45, -2.5, colorSet);
+    this.addCurve(45, 3.0, colorSet);
+    this.addCurve(45, -3.0, colorSet);
+  }
+
+  findSegment(z) {
+    if (this.segments.length === 0) return null;
+    return this.segments[Math.floor(z / CONFIG.SEGMENT_LENGTH) % this.segments.length];
+  }
+
+  // ステージに応じたコース生成（全5ステージ）
+  buildStageTrack(stageIndex) {
+    this.reset();
+    let colorSet = COLORS.ROAD;
+
+    switch (stageIndex) {
+      case 0: // Stage 1: COASTAL BREEZE（初級：広い直線主体、緩やかなカーブ）
+        colorSet = { LIGHT: COLORS.ROAD.LIGHT, DARK: COLORS.ROAD.DARK };
+        this.addStraight(40, colorSet);
+        this.addCurve(60, 1.8, colorSet);
+        this.addStraight(50, colorSet);
+        this.addCurve(70, -2.0, colorSet);
+        this.addHill(60, 800, colorSet);
+        this.addHill(60, -800, colorSet);
+        this.addStraight(60, colorSet);
+        this.addCurve(60, 2.2, colorSet);
+        this.addStraight(80, colorSet);
+        break;
+
+      case 1: // Stage 2: DESERT VALLEY（中級：連続S字カーブ、適度なNPC）
+        colorSet = { LIGHT: COLORS.ROAD.DESERT_LIGHT, DARK: COLORS.ROAD.DESERT_DARK };
+        this.addStraight(30, colorSet);
+        this.addSCurves(colorSet);
+        this.addStraight(40, colorSet);
+        this.addCurve(60, -3.2, colorSet);
+        this.addCurve(60, 3.2, colorSet);
+        this.addHill(50, 1200, colorSet);
+        this.addHill(50, -1200, colorSet);
+        this.addStraight(50, colorSet);
+        break;
+
+      case 2: // Stage 3: ALPINE RIDGE（起伏：激しいアップダウン、ブラインドコーナー）
+        colorSet = { LIGHT: COLORS.ROAD.SNOW_LIGHT, DARK: COLORS.ROAD.SNOW_DARK };
+        this.addStraight(30, colorSet);
+        this.addHill(70, 2400, colorSet);
+        this.addCurve(50, 3.5, colorSet, this.getLastY() - 1200);
+        this.addHill(60, -1200, colorSet);
+        this.addHill(70, 2600, colorSet);
+        this.addCurve(60, -3.8, colorSet, this.getLastY() - 2600);
+        this.addStraight(50, colorSet);
+        break;
+
+      case 3: // Stage 4: METROPOLIS NIGHT（高難度：急カーブの連続、幅寄せNPC）
+        colorSet = { LIGHT: COLORS.ROAD.NIGHT_LIGHT, DARK: COLORS.ROAD.NIGHT_DARK };
+        this.addStraight(30, colorSet);
+        this.addCurve(45, 4.2, colorSet);
+        this.addStraight(20, colorSet);
+        this.addCurve(45, -4.5, colorSet);
+        this.addSCurves(colorSet);
+        this.addCurve(50, 4.0, colorSet);
+        this.addStraight(40, colorSet);
+        break;
+
+      case 4: // Stage 5: VOLCANO CANYON（最終：狭路、急勾配、タイトコーナー複合）
+        colorSet = { LIGHT: COLORS.ROAD.VOLCANO_LIGHT, DARK: COLORS.ROAD.VOLCANO_DARK };
+        this.addStraight(25, colorSet);
+        this.addHill(50, 2200, colorSet);
+        this.addCurve(40, -4.8, colorSet);
+        this.addHill(50, -2200, colorSet);
+        this.addCurve(40, 5.0, colorSet);
+        this.addSCurves(colorSet);
+        this.addHill(60, 2800, colorSet);
+        this.addCurve(50, -4.5, colorSet, this.getLastY() - 2800);
+        this.addStraight(60, colorSet);
+        break;
+    }
+
+    // スタート＆ゴールゲート
+    this.segments[10].sprites.push({ type: 'START_GATE', offset: 0 });
+    const finishIndex = this.segments.length - 20;
+    this.segments[finishIndex].sprites.push({ type: 'START_GATE', offset: 0 });
+
+    // コース脇オブジェクト配置
+    this.populateDecorations(stageIndex);
+
+    this.trackLength = this.segments.length * CONFIG.SEGMENT_LENGTH;
+    return this.trackLength;
+  }
+
+  populateDecorations(stageIndex) {
+    const len = this.segments.length;
+    for (let i = 20; i < len - 30; i += 4) {
+      const seg = this.segments[i];
+
+      let spriteType = 'PALM_TREE';
+      if (stageIndex === 1) spriteType = (i % 8 === 0) ? 'ROCK' : 'CACTUS';
+      else if (stageIndex === 2) spriteType = 'SNOW_TREE';
+      else if (stageIndex === 3) spriteType = 'STREET_LIGHT';
+      else if (stageIndex === 4) spriteType = (i % 6 === 0) ? 'BILLBOARD_CHECK' : 'ROCK';
+
+      const side = (i % 2 === 0) ? 1 : -1;
+      const offset = side * (1.3 + Math.random() * 0.8);
+      seg.sprites.push({ type: spriteType, offset });
+
+      if (i % 36 === 0) {
+        const board = (i % 72 === 0) ? 'BILLBOARD_OUTRUN' : 'BILLBOARD_TURBO';
+        seg.sprites.push({ type: board, offset: -side * 1.5 });
+      }
+    }
+  }
+}
+
+// ==========================================
+// 5. プレイヤー & NPC車両 (VEHICLE PHYSICS)
+// ==========================================
+class Player {
+  constructor() {
+    this.x = 0;             // コース横位置 (-1:左端, 0:中央, +1:右端, >1:芝生)
+    this.z = 0;             // コース進行Z座標
+    this.speed = 0;         // km/h
+    this.gear = 'LOW';      // 'LOW' or 'HIGH'
+    this.steer = 0;         // -1:左, +1:右
+    this.isBraking = false;
+    this.isAccelerating = false;
+    this.isCrash = false;
+    this.crashTimer = 0;
+    this.invulnerableTimer = 0;
+    this.offRoad = false;
+  }
+
+  reset() {
+    this.x = 0;
+    this.z = 0;
+    this.speed = 0;
+    this.gear = 'LOW';
+    this.steer = 0;
+    this.isBraking = false;
+    this.isAccelerating = false;
+    this.isCrash = false;
+    this.crashTimer = 0;
+    this.invulnerableTimer = 0;
+    this.offRoad = false;
+  }
+
+  triggerCrash() {
+    if (this.isCrash || this.invulnerableTimer > 0) return;
+    this.isCrash = true;
+    this.crashTimer = CONFIG.CRASH_TIME;
+    this.speed = 0;
+  }
+
+  update(dt, input, currentSegment, trackLength) {
+    if (this.invulnerableTimer > 0) {
+      this.invulnerableTimer -= dt;
+    }
+
+    if (this.isCrash) {
+      this.crashTimer -= dt;
+      if (this.crashTimer <= 0) {
+        // クラッシュ復帰
+        this.isCrash = false;
+        this.x = 0;
+        this.gear = 'LOW';
+        this.speed = 25; // 低速リスタート
+        this.invulnerableTimer = CONFIG.INVULNERABLE_TIME; // 復帰後点滅無敵
+      }
+      return;
+    }
+
+    // 1. ギア切り替え
+    if (input.gearUp && this.gear === 'LOW') {
+      this.gear = 'HIGH';
+      window.game.sound.playShift();
+    } else if (input.gearDown && this.gear === 'HIGH') {
+      this.gear = 'LOW';
+      window.game.sound.playShift();
+    }
+
+    // 2. アクセル & ブレーキ & 物理加速
+    this.isAccelerating = input.accel;
+    this.isBraking = input.brake;
+    this.offRoad = Math.abs(this.x) > 1.0;
+
+    let targetMaxSpeed = this.gear === 'LOW' ? CONFIG.MAX_SPEED_LOW : CONFIG.MAX_SPEED_HIGH;
+    if (this.offRoad) {
+      targetMaxSpeed = CONFIG.OFF_ROAD_MAX_SPEED;
+    }
+
+    let accelRate = 0;
+    if (this.isAccelerating) {
+      if (this.speed < targetMaxSpeed) {
+        accelRate = (this.gear === 'LOW') ? CONFIG.ACCEL_LOW : CONFIG.ACCEL_HIGH;
+        if (this.gear === 'HIGH' && this.speed < 110) {
+          accelRate *= 0.45; // HIGHギア低速時のトルク不足
+        }
+      }
+    } else {
+      accelRate = CONFIG.DECEL_COAST;
+    }
+
+    if (this.isBraking) {
+      accelRate += CONFIG.DECEL_BRAKE;
+    }
+    if (this.offRoad && this.speed > CONFIG.OFF_ROAD_MAX_SPEED) {
+      accelRate += CONFIG.DECEL_OFFROAD;
+    }
+
+    this.speed = Math.max(0, Math.min(CONFIG.MAX_SPEED_HIGH, this.speed + accelRate * dt));
+
+    // 3. ステアリング操作 & 遠心力
+    this.steer = 0;
+    const speedRatio = this.speed / CONFIG.MAX_SPEED_HIGH;
+
+    if (input.left) {
+      this.steer = -1;
+      this.x -= CONFIG.STEER_SPEED * speedRatio * dt;
+    } else if (input.right) {
+      this.steer = 1;
+      this.x += CONFIG.STEER_SPEED * speedRatio * dt;
+    }
+
+    // カーブによる遠心力
+    if (currentSegment && currentSegment.curve !== 0) {
+      this.x -= speedRatio * currentSegment.curve * CONFIG.CENTRIFUGAL * dt;
+    }
+
+    // 4. Z前進
+    const deltaZ = (this.speed * 1000 / 3600) * 80 * dt;
+    this.z = (this.z + deltaZ) % trackLength;
+
+    // サウンド更新
+    window.game.sound.updateEngine(this.speed, CONFIG.MAX_SPEED_HIGH, this.gear);
+    const isSkidding = (Math.abs(this.steer) > 0 && speedRatio > 0.55 && Math.abs(currentSegment.curve) > 1.4) || (this.isBraking && this.speed > 50);
+    window.game.sound.playSkid(isSkidding);
+  }
+}
+
+class NPCManager {
+  constructor() {
+    this.cars = [];
+    this.colors = ['#0077ff', '#ffaa00', '#22bb33', '#aa22ee', '#ffffff', '#ff5533'];
+  }
+
+  reset(numCars, trackLength) {
+    this.cars = [];
+    for (let i = 0; i < numCars; i++) {
+      // プレイヤーの前方1500 unitsから均等に分散配置
+      const z = ((trackLength - 3000) / numCars) * i + 1500 + Math.random() * 600;
+      const offset = (Math.random() * 1.4 - 0.7);
+      const speed = 155 + Math.random() * 65; // 155〜220 km/h
+      const color = this.colors[Math.floor(Math.random() * this.colors.length)];
+      this.cars.push({
+        z: z % trackLength,
+        offset,
+        speed,
+        color,
+        targetOffset: offset,
+        steerTimer: Math.random() * 3
+      });
+    }
+  }
+
+  update(dt, player, trackLength, stageIndex) {
+    for (let i = 0; i < this.cars.length; i++) {
+      const car = this.cars[i];
+      const deltaZ = (car.speed * 1000 / 3600) * 80 * dt;
+      car.z = (car.z + deltaZ) % trackLength;
+
+      // 簡易AI：時々レーンチェンジ
+      car.steerTimer -= dt;
+      if (car.steerTimer <= 0) {
+        car.steerTimer = 2 + Math.random() * 4;
+        car.targetOffset = Math.max(-0.75, Math.min(0.75, car.offset + (Math.random() * 0.8 - 0.4)));
+
+        // 高難度ステージ(Stage 4〜5)ではプレイヤーの進路をブロックするAI
+        if (stageIndex >= 3) {
+          const distToPlayer = (car.z - player.z + trackLength) % trackLength;
+          if (distToPlayer > 0 && distToPlayer < 1200) {
+            car.targetOffset = player.x; // 幅寄せブロック
+          }
+        }
+      }
+
+      car.offset += (car.targetOffset - car.offset) * 1.8 * dt;
+    }
+  }
+}
+
+// ==========================================
+// 6. UI / HUD レンダラー
+// ==========================================
+class HUD {
+  constructor() {
+    this.flashTimer = 0;
+  }
+
+  render(ctx, player, raceTime, score, highScore, stageNum, stageName, currentSegmentIndex, totalSegments, road, npcs) {
+    const w = CONFIG.CANVAS_WIDTH;
+    const h = CONFIG.CANVAS_HEIGHT;
+    this.flashTimer += 0.05;
+
+    ctx.save();
+
+    // 1. スコア & ハイスコア（画面上部）
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px "Courier New", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`SCORE  ${Math.floor(score).toString().padStart(7, '0')}`, 30, 42);
+
+    ctx.fillStyle = '#ffcc00';
+    ctx.textAlign = 'right';
+    ctx.fillText(`HI-SCORE ${highScore.toString().padStart(7, '0')}`, w - 170, 42);
+
+    // 2. 制限時間 (TIME LIMIT) - 中央上部
+    const isUrgent = raceTime < 10 && raceTime > 0;
+    const timeColor = isUrgent ? (Math.sin(this.flashTimer * 10) > 0 ? '#ff1111' : '#ffffff') : '#00f0ff';
+    ctx.fillStyle = timeColor;
+    ctx.font = 'bold 38px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`TIME  ${Math.max(0, raceTime).toFixed(1)}`, w * 0.5, 46);
+
+    // 3. ステージ名表示（画面上部中央下）
+    ctx.fillStyle = '#aaa';
+    ctx.font = 'bold 15px "Courier New", monospace';
+    ctx.fillText(`STAGE ${stageNum + 1}: ${stageName}`, w * 0.5, 74);
+
+    // 4. スピードメーター（画面左下）
+    const speed = Math.floor(player.speed);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(30, h - 120, 180, 85);
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(30, h - 120, 180, 85);
+
+    ctx.fillStyle = '#00f0ff';
+    ctx.font = 'bold 44px "Courier New", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${speed.toString().padStart(3, '0')}`, 45, h - 55);
+
+    ctx.fillStyle = '#888';
+    ctx.font = 'bold 16px "Courier New", monospace';
+    ctx.fillText('km/h', 140, h - 55);
+
+    // スピードバーゲージ
+    const speedPercent = Math.min(1.0, player.speed / CONFIG.MAX_SPEED_HIGH);
+    ctx.fillStyle = '#222';
+    ctx.fillRect(45, h - 45, 150, 8);
+    const grad = ctx.createLinearGradient(45, 0, 195, 0);
+    grad.addColorStop(0, '#00ff88');
+    grad.addColorStop(0.7, '#ffff00');
+    grad.addColorStop(1, '#ff0044');
+    ctx.fillStyle = grad;
+    ctx.fillRect(45, h - 45, 150 * speedPercent, 8);
+
+    // 5. ギアインジケーター (GEAR: LOW / HIGH)
+    ctx.fillStyle = '#111';
+    ctx.fillRect(225, h - 120, 115, 85);
+    ctx.strokeStyle = '#444';
+    ctx.strokeRect(225, h - 120, 115, 85);
+
+    ctx.font = 'bold 15px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('GEAR', 282, h - 96);
+
+    const isLow = player.gear === 'LOW';
+    // LOW
+    ctx.fillStyle = isLow ? '#00f0ff' : '#444';
+    ctx.font = 'bold 22px "Courier New", monospace';
+    ctx.fillText('LOW', 255, h - 58);
+    // HIGH
+    ctx.fillStyle = !isLow ? '#ff0080' : '#444';
+    ctx.fillText('HIGH', 308, h - 58);
+
+    // LOWギアで頭打ちになったときのシフトアップナビ
+    if (isLow && player.speed >= 138 && Math.floor(Date.now() / 250) % 2 === 0) {
+      ctx.fillStyle = '#ffff00';
+      ctx.font = 'bold 13px "Courier New", monospace';
+      ctx.fillText('SHIFT UP! [↑]', 282, h - 30);
+    }
+
+    // 6. コースプログレスバー / ミニマップ（画面下部中央）
+    const barW = 320;
+    const barH = 10;
+    const barX = (w - barW) / 2;
+    const barY = h - 40;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(barX - 10, barY - 14, barW + 20, barH + 28);
+    ctx.strokeStyle = '#555';
+    ctx.strokeRect(barX, barY, barW, barH);
+
+    // コース全体の進行バー
+    const progress = Math.min(1.0, currentSegmentIndex / totalSegments);
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillRect(barX, barY, barW * progress, barH);
+
+    // 自車マーカー
+    ctx.fillStyle = '#ff2222';
+    ctx.beginPath();
+    ctx.arc(barX + barW * progress, barY + barH * 0.5, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // GOALアイコン
+    ctx.fillStyle = '#ffea00';
+    ctx.font = 'bold 12px "Courier New", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('FINISH', barX + barW, barY - 4);
+
+    // 7. 画面右上のリアルタイムミニレーダー描画
+    window.game.graphics.drawMiniRadar(ctx, road, player.z, npcs, w - 140, 20, 110, 150);
+
+    ctx.restore();
+  }
+
+  // 大破時の「CRASH!!」オーバーレイ警告
+  renderCrashAlert(ctx) {
+    const w = CONFIG.CANVAS_WIDTH;
+    const h = CONFIG.CANVAS_HEIGHT;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.font = 'bold 68px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ffff00';
+    ctx.shadowColor = '#ff0000';
+    ctx.shadowBlur = 25;
+    ctx.fillText('CRASH!!', w * 0.5, h * 0.38);
+    ctx.font = 'bold 24px "Courier New", monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('RESTARTING...', w * 0.5, h * 0.46);
+    ctx.restore();
+  }
+}
+
+// ==========================================
+// 7. メインゲームエンジン & ステートマシン
+// ==========================================
+const STATES = {
+  TITLE: 'TITLE',
+  PRE_RACE: 'PRE_RACE',
+  IN_RACE: 'IN_RACE',
+  RESULT: 'RESULT',
+  GAME_OVER: 'GAME_OVER',
+  ALL_CLEAR: 'ALL_CLEAR'
+};
+
+class Game {
+  constructor() {
+    this.canvas = document.getElementById('game-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.sound = new SoundEngine();
+    this.graphics = new ProceduralGraphics();
+    this.road = new Road();
+    this.player = new Player();
+    this.npc = new NPCManager();
+    this.hud = new HUD();
+
+    this.state = STATES.TITLE;
+    this.stageIndex = 0;
+    this.score = 0;
+    this.highScore = parseInt(localStorage.getItem('outrun_highscore') || '50000', 10);
+    this.raceTime = 60;
+    this.stateTimer = 0;
+    this.lastTime = performance.now();
+
+    this.input = {
+      left: false,
+      right: false,
+      accel: false,
+      brake: false,
+      gearUp: false,
+      gearDown: false
+    };
+
+    // 全5ステージ情報
+    this.stages = [
+      { name: 'COASTAL BREEZE', timeLimit: 60, numNPC: 8, skyTheme: 'DAY', bgTheme: 'COASTAL', desc: '初級: 広い直線主体、穏やかなヤシ並木' },
+      { name: 'DESERT VALLEY', timeLimit: 55, numNPC: 12, skyTheme: 'DESERT', bgTheme: 'DESERT', desc: '中級: 連続S字カーブ、岩山とサボテン' },
+      { name: 'ALPINE RIDGE', timeLimit: 50, numNPC: 14, skyTheme: 'SNOW', bgTheme: 'SNOW', desc: '起伏: 激しい勾配とブラインドコーナー' },
+      { name: 'METROPOLIS NIGHT', timeLimit: 45, numNPC: 18, skyTheme: 'NIGHT', bgTheme: 'NIGHT', desc: '高難度: 夜景の首都高速、幅寄せライバル' },
+      { name: 'VOLCANO CANYON', timeLimit: 45, numNPC: 20, skyTheme: 'VOLCANO', bgTheme: 'VOLCANO', desc: '最終: 狭路と急勾配、灼熱のタイトシケイン' }
+    ];
+
+    // 初回コース＆NPCセットアップ（タイトルデモ用）
+    this.road.buildStageTrack(0);
+    this.npc.reset(8, this.road.trackLength);
+
+    this.initEventListeners();
+  }
+
+  initEventListeners() {
+    window.addEventListener('keydown', (e) => {
+      this.sound.resume();
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.input.left = true;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') this.input.right = true;
+      if (e.code === 'KeyZ' || e.code === 'Space') this.input.accel = true;
+      if (e.code === 'KeyX' || e.code === 'ShiftLeft') this.input.brake = true;
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') this.input.gearUp = true;
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') this.input.gearDown = true;
+      if (e.code === 'KeyM') {
+        this.sound.toggleSound();
+      }
+
+      if (e.code === 'Space' || e.code === 'Enter') {
+        this.handleScreenAction();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.input.left = false;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') this.input.right = false;
+      if (e.code === 'KeyZ' || e.code === 'Space') this.input.accel = false;
+      if (e.code === 'KeyX' || e.code === 'ShiftLeft') this.input.brake = false;
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') this.input.gearUp = false;
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') this.input.gearDown = false;
+    });
+
+    // サウンドボタン
+    const soundBtn = document.getElementById('sound-btn');
+    if (soundBtn) {
+      soundBtn.addEventListener('click', () => {
+        this.sound.init();
+        this.sound.resume();
+        this.sound.toggleSound();
+      });
+    }
+
+    // モバイル用タッチイベント
+    const bindTouch = (id, prop) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.sound.init();
+        this.sound.resume();
+        this.input[prop] = true;
+      });
+      el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.input[prop] = false;
+      });
+    };
+    bindTouch('btn-left', 'left');
+    bindTouch('btn-right', 'right');
+    bindTouch('btn-accel', 'accel');
+    bindTouch('btn-brake', 'brake');
+    bindTouch('btn-gear-up', 'gearUp');
+    bindTouch('btn-gear-down', 'gearDown');
+
+    this.canvas.addEventListener('click', () => {
+      this.sound.init();
+      this.sound.resume();
+      this.handleScreenAction();
+    });
+  }
+
+  handleScreenAction() {
+    if (this.state === STATES.TITLE) {
+      this.stageIndex = 0;
+      this.score = 0;
+      this.startPreRace();
+    } else if (this.state === STATES.PRE_RACE) {
+      this.startRace();
+    } else if (this.state === STATES.RESULT) {
+      if (this.stageIndex + 1 < this.stages.length) {
+        this.stageIndex++;
+        this.startPreRace();
+      } else {
+        this.state = STATES.ALL_CLEAR;
+      }
+    } else if (this.state === STATES.GAME_OVER || this.state === STATES.ALL_CLEAR) {
+      this.state = STATES.TITLE;
+    }
+  }
+
+  startPreRace() {
+    this.state = STATES.PRE_RACE;
+    this.stateTimer = 3.2; // 3.2秒カウントダウン
+    const curStage = this.stages[this.stageIndex];
+    this.road.buildStageTrack(this.stageIndex);
+    this.player.reset();
+    this.npc.reset(curStage.numNPC, this.road.trackLength);
+    this.raceTime = curStage.timeLimit;
+    this.sound.playBeep(440, 0.15);
+  }
+
+  startRace() {
+    this.state = STATES.IN_RACE;
+    this.sound.playBeep(880, 0.4);
+    this.sound.startBGM();
+  }
+
+  // 投影計算関数
+  project(p, cameraX, cameraY, cameraZ, cameraDepth, width, height, roadWidth) {
+    p.camera.x = (p.world.x || 0) - cameraX;
+    p.camera.y = (p.world.y || 0) - cameraY;
+    p.camera.z = (p.world.z || 0) - cameraZ;
+    p.screen.scale = cameraDepth / Math.max(1, p.camera.z);
+    p.screen.x = Math.round((width / 2) + (p.screen.scale * p.camera.x * width / 2));
+    p.screen.y = Math.round((height / 2) - (p.screen.scale * p.camera.y * height / 2));
+    p.screen.w = Math.round(p.screen.scale * roadWidth * width / 2);
+  }
+
+  // 台形ポリゴン描画（芝生、縁石、路面、白線）
+  renderPolygon(ctx, x1, y1, w1, x2, y2, w2, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x1 - w1, y1);
+    ctx.lineTo(x2 - w2, y2);
+    ctx.lineTo(x2 + w2, y2);
+    ctx.lineTo(x1 + w1, y1);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // メインループ
+  run() {
+    const loop = (now) => {
+      const dt = Math.min(0.1, (now - this.lastTime) / 1000);
+      this.lastTime = now;
+
+      this.update(dt);
+      this.render();
+
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+
+  update(dt) {
+    const curStage = this.stages[this.stageIndex];
+
+    if (this.state === STATES.TITLE) {
+      // デモ走行
+      this.player.speed = 180;
+      this.player.z = (this.player.z + 180 * dt * 25) % (this.road.trackLength || 10000);
+      this.npc.update(dt, this.player, this.road.trackLength, 0);
+    } else if (this.state === STATES.PRE_RACE) {
+      this.stateTimer -= dt;
+      if (this.stateTimer <= 0) {
+        this.startRace();
+      }
+    } else if (this.state === STATES.IN_RACE) {
+      // 1. レースタイマー更新
+      this.raceTime -= dt;
+      if (this.raceTime <= 0) {
+        this.raceTime = 0;
+        this.state = STATES.GAME_OVER;
+        this.sound.stopBGM();
+        this.sound.playCrash();
+        return;
+      }
+
+      // 2. プレイヤー物理更新
+      const currentSegment = this.road.findSegment(this.player.z);
+      this.player.update(dt, this.input, currentSegment, this.road.trackLength);
+
+      // スコア加算（速度と走行距離）
+      this.score += (this.player.speed / 10) * dt * 20;
+
+      // 3. NPC車両更新
+      this.npc.update(dt, this.player, this.road.trackLength, this.stageIndex);
+
+      // 4. 衝突判定（障害物 & NPC）
+      this.checkCollisions(currentSegment);
+
+      // 5. ゴールライン到達判定
+      const finishIndex = this.road.segments.length - 20;
+      const finishZ = finishIndex * CONFIG.SEGMENT_LENGTH;
+      if (this.player.z >= finishZ && this.player.z < finishZ + 400) {
+        // ステージクリア！
+        this.state = STATES.RESULT;
+        this.sound.stopBGM();
+        this.sound.playJingleWin();
+
+        // タイムボーナス計算
+        const timeBonus = Math.floor(this.raceTime * 1000);
+        this.score += timeBonus;
+        if (this.score > this.highScore) {
+          this.highScore = Math.floor(this.score);
+          localStorage.setItem('outrun_highscore', this.highScore.toString());
+        }
+      }
+    }
+  }
+
+  checkCollisions(playerSegment) {
+    if (this.player.isCrash || this.player.invulnerableTimer > 0) return;
+
+    // 自車が画面上に描画されている実際のワールドZ座標
+    const playerWorldZ = (this.player.z + (CONFIG.CAMERA_HEIGHT * CONFIG.CAMERA_DEPTH)) % this.road.trackLength;
+    const actualSegment = this.road.findSegment(playerWorldZ);
+
+    const w = CONFIG.CANVAS_WIDTH;
+    const h = CONFIG.CANVAS_HEIGHT;
+    const playerScreenY = h - 70;
+    // 自車の画面上当たり判定ボックス (見た目の75%でギリギリのすり抜けを許容)
+    const playerBox = {
+      left: w * 0.5 - 65,
+      right: w * 0.5 + 65,
+      top: playerScreenY - 60,
+      bottom: playerScreenY
+    };
+
+    // A. コース脇スプライトとの衝突判定 (芝生上で、かつ障害物本体と接触した場合のみ)
+    if (Math.abs(this.player.x) > 1.05 && actualSegment) {
+      for (let i = 0; i < actualSegment.sprites.length; i++) {
+        const sprite = actualSegment.sprites[i];
+        if (Math.abs(this.player.x - sprite.offset) < 0.18) {
+          this.player.triggerCrash();
+          this.sound.playCrash();
+          return;
+        }
+      }
+    }
+
+    // B. ライバル車（NPC）との衝突判定
+    for (let i = 0; i < this.npc.cars.length; i++) {
+      const car = this.npc.cars[i];
+      let distZ = car.z - playerWorldZ;
+      if (distZ < -this.road.trackLength / 2) distZ += this.road.trackLength;
+      if (distZ > this.road.trackLength / 2) distZ -= this.road.trackLength;
+
+      // 前後方向の有効判定範囲 (自車前後 95 units 以内)
+      if (distZ > -40 && distZ < 95) {
+        const distX = Math.abs(this.player.x - car.offset);
+
+        // 画面上の2D投影スクリーン座標での精密なAABBボックス重複チェック
+        const carSeg = this.road.findSegment(car.z);
+        if (carSeg && carSeg.p1.screen && carSeg.p1.screen.scale) {
+          const carPercent = (car.z % CONFIG.SEGMENT_LENGTH) / CONFIG.SEGMENT_LENGTH;
+          const rawScale = carSeg.p1.screen.scale + (carSeg.p2.screen.scale - carSeg.p1.screen.scale) * carPercent;
+          const spriteScale = rawScale * (w / 2) * 2.5;
+          const carW = carSeg.p1.screen.w + (carSeg.p2.screen.w - carSeg.p1.screen.w) * carPercent;
+          const carX = (carSeg.p1.screen.x + (carSeg.p2.screen.x - carSeg.p1.screen.x) * carPercent) + (carW * car.offset);
+          const carY = carSeg.p1.screen.y + (carSeg.p2.screen.y - carSeg.p1.screen.y) * carPercent;
+
+          const carBoxW = 150 * spriteScale * 0.75;
+          const carBoxH = 80 * spriteScale * 0.75;
+          const carBox = {
+            left: carX - carBoxW * 0.5,
+            right: carX + carBoxW * 0.5,
+            top: carY - carBoxH,
+            bottom: carY
+          };
+
+          // スクリーン上の矩形重複判定
+          const isOverlap = !(playerBox.right < carBox.left || playerBox.left > carBox.right || playerBox.bottom < carBox.top || playerBox.top > carBox.bottom);
+
+          if (isOverlap || distX < 0.15) {
+            // 正面追突 (自車が正面中央寄りで高速突入)
+            if (distX < 0.08 && this.player.speed - car.speed > 50 && distZ > 0) {
+              this.player.triggerCrash();
+              this.sound.playCrash();
+            } else {
+              // 側面接触・かすり合い (バウンス減速して弾かれる)
+              this.player.speed = Math.max(0, this.player.speed * 0.82);
+              const pushDir = this.player.x < car.offset ? -0.16 : 0.16;
+              this.player.x += pushDir;
+              car.offset -= pushDir * 0.4;
+              this.sound.playBeep(240, 0.08, 'triangle');
+            }
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  render() {
+    const ctx = this.ctx;
+    const w = CONFIG.CANVAS_WIDTH;
+    const h = CONFIG.CANVAS_HEIGHT;
+    const curStage = this.stages[this.stageIndex];
+
+    ctx.clearRect(0, 0, w, h);
+
+    if (this.road.segments.length === 0) {
+      this.road.buildStageTrack(0);
+    }
+
+    const baseSegment = this.road.findSegment(this.player.z);
+    const basePercent = (this.player.z % CONFIG.SEGMENT_LENGTH) / CONFIG.SEGMENT_LENGTH;
+    const playerSegment = this.road.findSegment(this.player.z + (CONFIG.CAMERA_HEIGHT * CONFIG.CAMERA_DEPTH));
+    const playerPercent = ((this.player.z + (CONFIG.CAMERA_HEIGHT * CONFIG.CAMERA_DEPTH)) % CONFIG.SEGMENT_LENGTH) / CONFIG.SEGMENT_LENGTH;
+    const playerY = playerSegment.p1.world.y + (playerSegment.p2.world.y - playerSegment.p1.world.y) * playerPercent;
+    const cameraY = playerY + CONFIG.CAMERA_HEIGHT;
+
+    // 1. 多重パララックス背景描画
+    this.graphics.drawBackground(ctx, curStage, this.player.x, baseSegment.curve, this.player.speed / CONFIG.MAX_SPEED_HIGH, 0.016);
+
+    // 2. 道路セグメント描画（フロント・トゥ・バック）
+    let dx = -(baseSegment.curve * basePercent);
+    let x = 0;
+    let maxY = h;
+
+    const segmentsToRender = [];
+
+    for (let n = 0; n < CONFIG.DRAW_DISTANCE; n++) {
+      const segment = this.road.segments[(baseSegment.index + n) % this.road.segments.length];
+      segment.looped = segment.index < baseSegment.index;
+      segment.clip = maxY;
+
+      const cameraZ = this.player.z - (segment.looped ? this.road.trackLength : 0);
+      this.project(segment.p1, (this.player.x * CONFIG.ROAD_WIDTH) - x, cameraY, cameraZ, CONFIG.CAMERA_DEPTH, w, h, CONFIG.ROAD_WIDTH);
+      x += dx;
+      dx += segment.curve;
+      this.project(segment.p2, (this.player.x * CONFIG.ROAD_WIDTH) - x, cameraY, cameraZ, CONFIG.CAMERA_DEPTH, w, h, CONFIG.ROAD_WIDTH);
+
+      // クリッピング判定
+      if (segment.p1.camera.z <= CONFIG.CAMERA_DEPTH || segment.p2.screen.y >= segment.p1.screen.y || segment.p2.screen.y >= maxY) {
+        continue;
+      }
+
+      // 芝生描画
+      ctx.fillStyle = segment.color.grass;
+      ctx.fillRect(0, segment.p2.screen.y, w, segment.p1.screen.y - segment.p2.screen.y);
+
+      // 縁石（ランブルストリップ）
+      const r1 = segment.p1.screen.w / Math.max(6, 2 * CONFIG.LANES);
+      const r2 = segment.p2.screen.w / Math.max(6, 2 * CONFIG.LANES);
+      this.renderPolygon(ctx, segment.p1.screen.x - segment.p1.screen.w - r1, segment.p1.screen.y, r1, segment.p2.screen.x - segment.p2.screen.w - r2, segment.p2.screen.y, r2, segment.color.rumble);
+      this.renderPolygon(ctx, segment.p1.screen.x + segment.p1.screen.w + r1, segment.p1.screen.y, r1, segment.p2.screen.x + segment.p2.screen.w + r2, segment.p2.screen.y, r2, segment.color.rumble);
+
+      // アスファルト路面
+      this.renderPolygon(ctx, segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w, segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w, segment.color.road);
+
+      // レーンライン（白破線）
+      if (segment.color.lane) {
+        const l1 = segment.p1.screen.w / 32;
+        const l2 = segment.p2.screen.w / 32;
+        const laneW1 = segment.p1.screen.w * 2 / CONFIG.LANES;
+        const laneW2 = segment.p2.screen.w * 2 / CONFIG.LANES;
+        for (let lane = 1; lane < CONFIG.LANES; lane++) {
+          const laneX1 = segment.p1.screen.x - segment.p1.screen.w + laneW1 * lane;
+          const laneX2 = segment.p2.screen.x - segment.p2.screen.w + laneW2 * lane;
+          this.renderPolygon(ctx, laneX1, segment.p1.screen.y, l1, laneX2, segment.p2.screen.y, l2, segment.color.lane);
+        }
+      }
+
+      maxY = segment.p1.screen.y;
+      segmentsToRender.push(segment);
+    }
+
+    // 3. スプライト（障害物）およびNPC車を奥から手前へ走査・描画
+    for (let n = CONFIG.DRAW_DISTANCE - 1; n >= 0; n--) {
+      const segment = this.road.segments[(baseSegment.index + n) % this.road.segments.length];
+
+      // NPC車描画
+      for (let i = 0; i < this.npc.cars.length; i++) {
+        const car = this.npc.cars[i];
+        const carSeg = this.road.findSegment(car.z);
+        if (carSeg && carSeg.index === segment.index) {
+          const carPercent = (car.z % CONFIG.SEGMENT_LENGTH) / CONFIG.SEGMENT_LENGTH;
+          const rawScale = segment.p1.screen.scale + (segment.p2.screen.scale - segment.p1.screen.scale) * carPercent;
+          const spriteScale = rawScale * (w / 2) * 2.5;
+          const carW = segment.p1.screen.w + (segment.p2.screen.w - segment.p1.screen.w) * carPercent;
+          const carX = (segment.p1.screen.x + (segment.p2.screen.x - segment.p1.screen.x) * carPercent) + (carW * car.offset);
+          const carY = segment.p1.screen.y + (segment.p2.screen.y - segment.p1.screen.y) * carPercent;
+          if (carY > 0 && carY < h + 150) {
+            this.graphics.drawNPCCar(ctx, car, carX, carY, spriteScale, segment.clip);
+          }
+        }
+      }
+
+      // コース脇スプライト描画
+      for (let i = 0; i < segment.sprites.length; i++) {
+        const sprite = segment.sprites[i];
+        const spriteScale = segment.p1.screen.scale * (w / 2) * 1.5;
+        const spriteX = segment.p1.screen.x + (segment.p1.screen.w * sprite.offset);
+        const spriteY = segment.p1.screen.y;
+        if (spriteY > 0 && spriteY < h + 150) {
+          this.graphics.drawSprite(ctx, sprite.type, spriteX, spriteY, spriteScale, segment.clip);
+        }
+      }
+    }
+
+    // 4. 自車（プレイヤー）描画
+    const playerScreenY = h - 70;
+    this.graphics.drawPlayerCar(
+      ctx,
+      w * 0.5,
+      playerScreenY,
+      1.3,
+      this.player.steer,
+      this.player.isBraking,
+      this.player.isCrash,
+      this.player.crashTimer,
+      this.player.invulnerableTimer,
+      this.player.offRoad,
+      this.player.speed
+    );
+
+    // 5. HUD & 各画面オーバーレイ描画
+    if (this.state === STATES.IN_RACE) {
+      this.hud.render(
+        ctx,
+        this.player,
+        this.raceTime,
+        this.score,
+        this.highScore,
+        this.stageIndex,
+        curStage.name,
+        baseSegment.index,
+        this.road.segments.length,
+        this.road,
+        this.npc.cars
+      );
+      if (this.player.isCrash) {
+        this.hud.renderCrashAlert(ctx);
+      }
+    } else {
+      this.renderScreenOverlays(ctx, w, h);
+    }
+  }
+
+  renderScreenOverlays(ctx, w, h) {
+    ctx.save();
+
+    if (this.state === STATES.TITLE) {
+      // タイトル画面
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.fillRect(0, 0, w, h);
+
+      // 80s ネオンロゴ
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 84px "Courier New", sans-serif';
+      ctx.fillStyle = '#ff0080';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 35;
+      ctx.fillText('OUTRUN RUSH', w * 0.5, h * 0.32);
+
+      ctx.font = 'bold 30px "Courier New", sans-serif';
+      ctx.fillStyle = '#ffcc00';
+      ctx.shadowBlur = 15;
+      ctx.fillText('1986 ARCADE TRIBUTE', w * 0.5, h * 0.42);
+      ctx.shadowBlur = 0;
+
+      // ハイスコア
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px "Courier New", monospace';
+      ctx.fillText(`TOP RECORD: ${this.highScore.toString().padStart(7, '0')} PTS`, w * 0.5, h * 0.54);
+
+      // スタート案内点滅
+      if (Math.floor(Date.now() / 450) % 2 === 0) {
+        ctx.fillStyle = '#00f0ff';
+        ctx.font = 'bold 32px "Courier New", monospace';
+        ctx.fillText('PRESS SPACE / ENTER TO START', w * 0.5, h * 0.68);
+      }
+
+      // 操作ガイド
+      ctx.fillStyle = '#aaa';
+      ctx.font = 'bold 16px "Courier New", monospace';
+      ctx.fillText('KEYBOARD: [Z/SPACE] GAS  [X] BRAKE  [←/→] STEER  [↑/↓] GEAR(L/H)', w * 0.5, h * 0.82);
+
+    } else if (this.state === STATES.PRE_RACE) {
+      // ステージ紹介画面（2Dコースミニマップ全体表示）
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(0, 0, w, h);
+
+      const curStage = this.stages[this.stageIndex];
+      ctx.textAlign = 'center';
+
+      ctx.fillStyle = '#ffcc00';
+      ctx.font = 'bold 32px "Courier New", monospace';
+      ctx.fillText(`STAGE ${this.stageIndex + 1}`, w * 0.5, h * 0.18);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 48px "Courier New", monospace';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 25;
+      ctx.fillText(curStage.name, w * 0.5, h * 0.27);
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#aaa';
+      ctx.font = 'bold 16px "Courier New", monospace';
+      ctx.fillText(curStage.desc, w * 0.5, h * 0.33);
+
+      // 2Dコースマップ描画
+      this.graphics.drawCourseMap2D(ctx, this.road, w * 0.5, h * 0.55, 380, 220);
+
+      ctx.fillStyle = '#00f0ff';
+      ctx.font = 'bold 20px "Courier New", monospace';
+      ctx.fillText(`TIME LIMIT: ${curStage.timeLimit} SECONDS`, w * 0.5, h * 0.74);
+
+      // カウントダウン
+      const cd = Math.ceil(this.stateTimer);
+      ctx.fillStyle = '#ff0080';
+      ctx.font = 'bold 64px "Courier New", monospace';
+      ctx.shadowColor = '#ff0080';
+      ctx.shadowBlur = 20;
+      ctx.fillText(cd > 0 ? cd.toString() : 'GO!', w * 0.5, h * 0.85);
+      ctx.shadowBlur = 0;
+
+    } else if (this.state === STATES.RESULT) {
+      // リザルト画面
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#00ff88';
+      ctx.font = 'bold 64px "Courier New", monospace';
+      ctx.shadowColor = '#00ff88';
+      ctx.shadowBlur = 30;
+      ctx.fillText('STAGE CLEAR!', w * 0.5, h * 0.32);
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 32px "Courier New", monospace';
+      ctx.fillText(`REMAINING TIME: ${this.raceTime.toFixed(1)}s`, w * 0.5, h * 0.46);
+      ctx.fillText(`TOTAL SCORE: ${Math.floor(this.score)}`, w * 0.5, h * 0.55);
+
+      if (Math.floor(Date.now() / 400) % 2 === 0) {
+        ctx.fillStyle = '#ffff00';
+        ctx.font = 'bold 28px "Courier New", monospace';
+        ctx.fillText('PRESS SPACE TO NEXT STAGE', w * 0.5, h * 0.72);
+      }
+
+    } else if (this.state === STATES.GAME_OVER) {
+      // ゲームオーバー
+      ctx.fillStyle = 'rgba(20, 0, 0, 0.82)';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ff1111';
+      ctx.font = 'bold 72px "Courier New", monospace';
+      ctx.shadowColor = '#ff0000';
+      ctx.shadowBlur = 35;
+      ctx.fillText('TIME UP!', w * 0.5, h * 0.35);
+      ctx.fillText('GAME OVER', w * 0.5, h * 0.48);
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 28px "Courier New", monospace';
+      ctx.fillText(`FINAL SCORE: ${Math.floor(this.score)}`, w * 0.5, h * 0.62);
+
+      if (Math.floor(Date.now() / 450) % 2 === 0) {
+        ctx.fillStyle = '#00f0ff';
+        ctx.font = 'bold 26px "Courier New", monospace';
+        ctx.fillText('PRESS SPACE TO TITLE', w * 0.5, h * 0.76);
+      }
+
+    } else if (this.state === STATES.ALL_CLEAR) {
+      // 全5ステージ制覇（エンディング）
+      ctx.fillStyle = 'rgba(0, 20, 40, 0.88)';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffff00';
+      ctx.font = 'bold 64px "Courier New", monospace';
+      ctx.shadowColor = '#ffaa00';
+      ctx.shadowBlur = 35;
+      ctx.fillText('CONGRATULATIONS!!', w * 0.5, h * 0.30);
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#00f0ff';
+      ctx.font = 'bold 36px "Courier New", monospace';
+      ctx.fillText('YOU CONQUERED ALL 5 STAGES!', w * 0.5, h * 0.42);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 30px "Courier New", monospace';
+      ctx.fillText(`HALL OF FAME SCORE: ${Math.floor(this.score)}`, w * 0.5, h * 0.56);
+
+      ctx.fillStyle = '#aaa';
+      ctx.font = 'bold 18px "Courier New", monospace';
+      ctx.fillText('THANK YOU FOR PLAYING!', w * 0.5, h * 0.66);
+
+      if (Math.floor(Date.now() / 450) % 2 === 0) {
+        ctx.fillStyle = '#ff0080';
+        ctx.font = 'bold 28px "Courier New", monospace';
+        ctx.fillText('PRESS SPACE TO RETURN TITLE', w * 0.5, h * 0.78);
+      }
+    }
+
+    ctx.restore();
+  }
+}
+
+// ゲーム起動
+window.addEventListener('DOMContentLoaded', () => {
+  window.game = new Game();
+  window.game.run();
+});
+  </script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PUYO PUYO CLASH - ぷよ対戦バトル</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-container">
+    <!-- ヘッダー / トップバー -->
+    <header id="top-bar">
+      <div class="logo-wrap">
+        <h1 class="game-logo">PUYO PUYO <span>CLASH</span></h1>
+        <span class="version-tag">VER 2.0 ARCADE</span>
+      </div>
+      <div class="top-controls">
+        <button id="btn-sound-toggle" class="icon-btn" title="サウンド切り替え">🔊 BGM/SE</button>
+        <button id="btn-pause" class="icon-btn" title="一時停止 (P)">⏸ PAUSE</button>
+        <button id="btn-ranking-open" class="icon-btn" title="ランキング">🏆 RANKING</button>
+        <button id="btn-how-to" class="icon-btn" title="操作説明">❓ HOW TO</button>
+      </div>
+    </header>
+
+    <!-- メイン対戦アリーナ -->
+    <main id="arena">
+      <!-- プレイヤー側フィールド (LEFT) -->
+      <section class="field-panel player-panel" id="player-section">
+        <div class="character-card player-card">
+          <div class="avatar player-avatar">YOU</div>
+          <div class="char-info">
+            <div class="char-name">PLAYER 1</div>
+            <div class="char-status">READY</div>
+          </div>
+        </div>
+
+        <!-- 予告おじゃまぷよトレイ -->
+        <div class="ojama-tray-wrap">
+          <div class="tray-label">WARNING:</div>
+          <div class="ojama-tray" id="player-ojama-tray"></div>
+        </div>
+
+        <!-- プレイヤー用メインCanvas -->
+        <div class="canvas-wrapper">
+          <canvas id="player-canvas" width="288" height="576"></canvas>
+          <div class="danger-vignette" id="player-danger"></div>
+          <!-- カットイン演出表示レイヤー -->
+          <div class="chain-cutin-layer" id="player-cutin"></div>
+        </div>
+
+        <!-- スコア・統計 -->
+        <div class="stats-box">
+          <div class="stat-item">
+            <span class="lbl">SCORE</span>
+            <span class="val" id="player-score">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="lbl">MAX CHAIN</span>
+            <span class="val" id="player-max-chain">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 中央インフォメーション / ネクストぷよエリア (CENTER) -->
+      <section id="center-info-panel">
+        <!-- ステージ進捗バッジ -->
+        <div class="stage-badge-box">
+          <div class="stage-label">STAGE</div>
+          <div class="stage-num" id="current-stage-num">1 / 5</div>
+          <div class="stage-title" id="current-stage-title">すらいむ君</div>
+        </div>
+
+        <!-- VSインジケーター -->
+        <div class="vs-emblem">VS</div>
+
+        <!-- ネクストぷよ表示 -->
+        <div class="next-box-container">
+          <!-- プレイヤーNext -->
+          <div class="next-group player-next-group">
+            <span class="next-label">P1 NEXT</span>
+            <div class="next-puyo-card">
+              <canvas id="player-next-canvas" width="64" height="128"></canvas>
+            </div>
+          </div>
+
+          <!-- CPU Next -->
+          <div class="next-group cpu-next-group">
+            <span class="next-label">CPU NEXT</span>
+            <div class="next-puyo-card">
+              <canvas id="cpu-next-canvas" width="64" height="128"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 試合状況メッセージ -->
+        <div class="match-announcer" id="match-announcer">READY</div>
+
+        <!-- 戦闘タイマー -->
+        <div class="game-timer" id="game-timer">00:00</div>
+      </section>
+
+      <!-- CPU側フィールド (RIGHT) -->
+      <section class="field-panel cpu-panel" id="cpu-section">
+        <div class="character-card cpu-card">
+          <div class="avatar cpu-avatar" id="cpu-avatar">🤖</div>
+          <div class="char-info">
+            <div class="char-name" id="cpu-name">CPU BOT</div>
+            <div class="char-status" id="cpu-level">EASY</div>
+          </div>
+        </div>
+
+        <!-- 予告おじゃまぷよトレイ -->
+        <div class="ojama-tray-wrap">
+          <div class="tray-label">WARNING:</div>
+          <div class="ojama-tray" id="cpu-ojama-tray"></div>
+        </div>
+
+        <!-- CPU用メインCanvas -->
+        <div class="canvas-wrapper">
+          <canvas id="cpu-canvas" width="288" height="576"></canvas>
+          <div class="danger-vignette" id="cpu-danger"></div>
+          <!-- カットイン演出表示レイヤー -->
+          <div class="chain-cutin-layer" id="cpu-cutin"></div>
+        </div>
+
+        <!-- スコア・統計 -->
+        <div class="stats-box">
+          <div class="stat-item">
+            <span class="lbl">SCORE</span>
+            <span class="val" id="cpu-score">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="lbl">MAX CHAIN</span>
+            <span class="val" id="cpu-max-chain">0</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- モバイル/タッチ操作用バーチャルパッド -->
+    <div id="touch-controls">
+      <div class="touch-dpad">
+        <button class="t-btn" id="btn-left">◀</button>
+        <button class="t-btn" id="btn-down">▼</button>
+        <button class="t-btn" id="btn-right">▶</button>
+      </div>
+      <div class="touch-actions">
+        <button class="t-btn t-action" id="btn-rot-l">左回転 (Z)</button>
+        <button class="t-btn t-action" id="btn-rot-r">右回転 (X)</button>
+        <button class="t-btn t-drop" id="btn-hard-drop">即落 (↑)</button>
+      </div>
+    </div>
+
+    <!-- モーダル / オーバーレイ -->
+
+    <!-- タイトル画面モーダル -->
+    <div class="modal-overlay active" id="title-modal">
+      <div class="modal-content title-content">
+        <h1 class="title-logo">PUYO PUYO<br><span class="highlight">CLASH</span></h1>
+        <p class="subtitle">PURE JAVASCRIPT & CANVAS PUZZLE BATTLE</p>
+        <div class="title-puyo-showcase">
+          <div class="demo-puyo red bounce-1"></div>
+          <div class="demo-puyo green bounce-2"></div>
+          <div class="demo-puyo blue bounce-3"></div>
+          <div class="demo-puyo yellow bounce-4"></div>
+          <div class="demo-puyo purple bounce-5"></div>
+        </div>
+        <div class="title-menu">
+          <button id="btn-start-game" class="menu-btn primary-btn pulse-glow">START GAME (対戦開始)</button>
+          <button id="btn-title-ranking" class="menu-btn secondary-btn">RANKING (ハイスコア)</button>
+          <button id="btn-title-howto" class="menu-btn secondary-btn">HOW TO PLAY (遊び方)</button>
+        </div>
+        <div class="quick-tips">
+          <p>💡 同じ色のぷよを4つ繋げて消去！連鎖を作っておじゃまぷよを送り込もう！</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作説明モーダル -->
+    <div class="modal-overlay" id="howto-modal">
+      <div class="modal-content">
+        <h2 class="modal-title">HOW TO PLAY (操作説明)</h2>
+        <div class="howto-grid">
+          <div class="key-card"><kbd>←</kbd> <kbd>→</kbd><span>左右移動</span></div>
+          <div class="key-card"><kbd>↓</kbd><span>高速落下 (ソフトドロップ)</span></div>
+          <div class="key-card"><kbd>↑</kbd> または <kbd>Space</kbd><span>即時設置 (ハードドロップ)</span></div>
+          <div class="key-card"><kbd>Z</kbd> または <kbd>J</kbd><span>左回転 (反時計回り)</span></div>
+          <div class="key-card"><kbd>X</kbd> または <kbd>K</kbd><span>右回転 (時計回り)</span></div>
+          <div class="key-card"><kbd>P</kbd><span>ポーズ / 再開</span></div>
+        </div>
+        <div class="rules-explanation">
+          <h3>ルール & 勝敗</h3>
+          <ul>
+            <li>同じ色のぷよを<strong>4個以上</strong>縦横に隣接させると消去！</li>
+            <li>連鎖を組むと相手のフィールドに<strong>「おじゃまぷよ」</strong>を降らせて邪魔できます。</li>
+            <li>相手から攻撃された時も、自分の連鎖で<strong>「相殺（そうさい）」</strong>可能！</li>
+            <li><strong>左から3列目の最上段（×印）</strong>が埋まるとゲームオーバー！</li>
+            <li>全5ステージの個性豊かなCPUを倒して<strong>ALL CLEAR</strong>を目指せ！</li>
+          </ul>
+        </div>
+        <button id="btn-close-howto" class="menu-btn secondary-btn">閉じる</button>
+      </div>
+    </div>
+
+    <!-- ハイスコアランキングモーダル -->
+    <div class="modal-overlay" id="ranking-modal">
+      <div class="modal-content">
+        <h2 class="modal-title">🏆 HIGH SCORES (殿堂入り)</h2>
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th>RANK</th>
+              <th>NAME</th>
+              <th>SCORE</th>
+              <th>STAGE</th>
+              <th>MAX CHAIN</th>
+              <th>DATE</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-table-body">
+            <!-- JSで動的生成 -->
+          </tbody>
+        </table>
+        <div class="ranking-actions">
+          <button id="btn-reset-ranking" class="menu-btn danger-btn">記録リセット</button>
+          <button id="btn-close-ranking" class="menu-btn secondary-btn">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ゲーム結果モーダル (WIN / LOSE / ALL CLEAR) -->
+    <div class="modal-overlay" id="result-modal">
+      <div class="modal-content result-content">
+        <h2 class="result-title" id="result-title">STAGE CLEAR!</h2>
+        <div class="result-badge" id="result-badge">EXCELLENT</div>
+        
+        <div class="result-stats">
+          <div class="res-row"><span>到達ステージ:</span><strong id="res-stage">Stage 1</strong></div>
+          <div class="res-row"><span>トータルスコア:</span><strong id="res-score">12,500</strong></div>
+          <div class="res-row"><span>最大連鎖数:</span><strong id="res-maxchain">4 Chains</strong></div>
+        </div>
+
+        <!-- 名前入力フォーム (ランキング記録用) -->
+        <div class="name-entry-box" id="name-entry-box">
+          <label for="player-name-input">プレイヤー名を入力:</label>
+          <input type="text" id="player-name-input" maxlength="10" value="PLAYER 1">
+        </div>
+
+        <div class="result-actions">
+          <button id="btn-next-stage" class="menu-btn primary-btn pulse-glow">次のステージへ</button>
+          <button id="btn-retry" class="menu-btn primary-btn">もう一度挑戦</button>
+          <button id="btn-title-return" class="menu-btn secondary-btn">タイトルへ戻る</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 一時停止オーバーレイ -->
+    <div class="modal-overlay" id="pause-modal">
+      <div class="modal-content pause-content">
+        <h2>PAUSED</h2>
+        <p>ゲームは一時停止中です</p>
+        <button id="btn-resume" class="menu-btn primary-btn">再開する (RESUME)</button>
+        <button id="btn-pause-to-title" class="menu-btn secondary-btn">タイトルへ戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- スクリプトインクルード -->
+  <script src="js/audio.js"></script>
+  <script src="js/visual.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

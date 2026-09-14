@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEO BREAKOUT // レトロフューチャー・ブロック崩し</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <header class="game-header">
+      <h1 class="title">NEO BREAKOUT</h1>
+      <div class="info-bar">
+        <div class="info-item">
+          <span class="label">STAGE:</span>
+          <span id="stage-display" class="value stage-value">STAGE 1/3</span>
+        </div>
+        <div class="info-item">
+          <span class="label">SCORE:</span>
+          <span id="score" class="value">00000</span>
+        </div>
+        <div class="info-item">
+          <span class="label">HIGH SCORE:</span>
+          <span id="high-score" class="value">00000</span>
+        </div>
+        <div class="info-item">
+          <span class="label">LIVES:</span>
+          <span id="lives" class="value lives-display">❤❤❤</span>
+        </div>
+        <button id="rankingBtn" class="cyber-btn rank-open-btn" title="ハイスコアランキング表示">🏆 RANK</button>
+      </div>
+    </header>
+
+    <div class="canvas-wrapper">
+      <div id="powerupBanner" class="powerup-banner"></div>
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      <div class="crt-overlay"></div>
+    </div>
+
+    <footer class="game-footer">
+      <div class="instructions">
+        <span><kbd>←</kbd> <kbd>→</kbd> または <kbd>マウス</kbd> : パドル移動</span>
+        <span><kbd>SPACE</kbd> または <kbd>クリック</kbd> : 発射 / リトライ / 次へ</span>
+      </div>
+      <div class="items-legend">
+        <span class="legend-item blue">● MULTI</span>
+        <span class="legend-item green">◀▶ EXPAND</span>
+        <span class="legend-item red">⚡ PIERCE</span>
+        <span class="legend-item yellow">▼ SLOW</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 名前入力モーダル (Top 5 達成時) -->
+  <div id="nameInputModal" class="modal-backdrop hidden">
+    <div class="cyber-modal">
+      <h2 class="modal-title neon-gold">NEW HIGH SCORE!</h2>
+      <p class="modal-sub">TOP 5 RANKING にランクインしました！</p>
+      <div class="record-preview">
+        <div>SCORE: <span id="recordScore" class="neon-yellow">00000</span></div>
+        <div>STAGE: <span id="recordStage" class="neon-cyan">STAGE 1</span></div>
+      </div>
+      <form id="nameInputForm" class="name-form">
+        <label for="playerNameInput">PLAYER NAME (英数 3〜8文字):</label>
+        <input type="text" id="playerNameInput" maxlength="8" pattern="[A-Za-z0-9_\-]{3,8}" required autofocus placeholder="PLAYER">
+        <div class="modal-actions">
+          <button type="submit" class="cyber-btn primary-btn">RANK IN</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ランキング表示モーダル -->
+  <div id="rankingModal" class="modal-backdrop hidden">
+    <div class="cyber-modal ranking-modal">
+      <div class="modal-header">
+        <h2 class="modal-title neon-cyan">HALL OF FAME // TOP 5</h2>
+        <button id="closeRankingBtn" class="close-btn" title="閉じる">×</button>
+      </div>
+      <div class="table-container">
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th>RANK</th>
+              <th>NAME</th>
+              <th>SCORE</th>
+              <th>STAGE</th>
+              <th>DATE</th>
+            </tr>
+          </thead>
+          <tbody id="rankingTableBody">
+            <!-- JSで動的生成 -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-actions space-between">
+        <button id="resetRankingBtn" class="cyber-btn danger-btn">RESET DATA</button>
+        <button id="closeRankingBottomBtn" class="cyber-btn primary-btn">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
