@@ -1,0 +1,2 @@
+# AIDevelopmentSample
+生成AIを活用した開発のサンプルです
