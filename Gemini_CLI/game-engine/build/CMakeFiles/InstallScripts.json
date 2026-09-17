@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"G:/Gemini_CLI/game-engine/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
