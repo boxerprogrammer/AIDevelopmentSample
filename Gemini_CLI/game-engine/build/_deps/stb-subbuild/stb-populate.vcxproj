@@ -1,0 +1,303 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DAC5D094-266C-35DB-916B-B0D9023B3FB5}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>stb-populate</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\2321ab7742f8e75396ba379d8a151c26\stb-populate-mkdir.rule">
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating directories for 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -Dcfgdir=/Debug -P G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/tmp/stb-populate-mkdirs.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/Debug/stb-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-mkdir</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\2321ab7742f8e75396ba379d8a151c26\stb-populate-download.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing download step (git clone) for 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd G:\Gemini_CLI\game-engine\build\_deps
+if %errorlevel% neq 0 goto :cmEnd
+G:
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/tmp/stb-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/Debug/stb-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\stb-populate-gitinfo.txt;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-mkdir;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-download</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\2321ab7742f8e75396ba379d8a151c26\stb-populate-update.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing update step for 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd G:\Gemini_CLI\game-engine\build\_deps\stb-src
+if %errorlevel% neq 0 goto :cmEnd
+G:
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -Dcan_fetch=YES -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/tmp/stb-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\tmp\stb-populate-gitupdate.cmake;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\stb-populate-update-info.txt;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-update</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\2321ab7742f8e75396ba379d8a151c26\stb-populate-patch.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No patch step for 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/Debug/stb-populate-patch
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\stb-populate-patch-info.txt;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-update;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-patch</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\2321ab7742f8e75396ba379d8a151c26\stb-populate-configure.rule">
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No configure step for 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd G:\Gemini_CLI\game-engine\build\_deps\stb-build
+if %errorlevel% neq 0 goto :cmEnd
+G:
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/Debug/stb-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\tmp\stb-populate-cfgcmd.txt;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-patch;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-configure</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\2321ab7742f8e75396ba379d8a151c26\stb-populate-build.rule">
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No build step for 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd G:\Gemini_CLI\game-engine\build\_deps\stb-build
+if %errorlevel% neq 0 goto :cmEnd
+G:
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/Debug/stb-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-configure;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-build</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\2321ab7742f8e75396ba379d8a151c26\stb-populate-install.rule">
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No install step for 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd G:\Gemini_CLI\game-engine\build\_deps\stb-build
+if %errorlevel% neq 0 goto :cmEnd
+G:
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/Debug/stb-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-build;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-install</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\2321ab7742f8e75396ba379d8a151c26\stb-populate-test.rule">
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No test step for 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd G:\Gemini_CLI\game-engine\build\_deps\stb-build
+if %errorlevel% neq 0 goto :cmEnd
+G:
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/Debug/stb-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-install;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-test</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\82ff3f514ff5fc4e08dde7226da21878\stb-populate-complete.rule">
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Completed 'stb-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -E make_directory G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/CMakeFiles/Debug
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/CMakeFiles/Debug/stb-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"D:\Program Files\CMake\bin\cmake.exe" -E touch G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/Debug/stb-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-install;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-mkdir;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-download;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-update;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-patch;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-configure;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-build;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\src\stb-populate-stamp\Debug\stb-populate-test;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\Debug\stb-populate-complete</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\43cf741f7eeadd8ed9cfe8c9e6283b94\stb-populate.rule">
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"></Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\Debug\stb-populate-complete;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\stb-populate</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -SG:/Gemini_CLI/game-engine/build/_deps/stb-subbuild -BG:/Gemini_CLI/game-engine/build/_deps/stb-subbuild --check-stamp-file G:/Gemini_CLI/game-engine/build/_deps/stb-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeInitializeConfigs.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeSystemSpecificInitialize.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject\PatchInfo.txt.in;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject\RepositoryInfo.txt.in;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject\UpdateInfo.txt.in;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject\cfgcmd.txt.in;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject\gitclone.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject\gitupdate.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject\mkdirs.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\ExternalProject\shared_internal_commands.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\Platform\Windows-Initialize.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\Platform\WindowsPaths.cmake;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\4.4.0-rc3\CMakeSystem.cmake;G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\stb-populate-prefix\tmp\stb-populate-mkdirs.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\stb-populate">
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\ZERO_CHECK.vcxproj">
+      <Project>{0688DAED-EB60-3178-9937-E79D6D9A88E3}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

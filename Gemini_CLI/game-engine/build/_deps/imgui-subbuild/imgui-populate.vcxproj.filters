@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\19ae42c8a23d0be091ea864cd5a1e241\imgui-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\19ae42c8a23d0be091ea864cd5a1e241\imgui-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\19ae42c8a23d0be091ea864cd5a1e241\imgui-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\19ae42c8a23d0be091ea864cd5a1e241\imgui-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\19ae42c8a23d0be091ea864cd5a1e241\imgui-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\19ae42c8a23d0be091ea864cd5a1e241\imgui-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\19ae42c8a23d0be091ea864cd5a1e241\imgui-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\19ae42c8a23d0be091ea864cd5a1e241\imgui-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\ce86460e34201975b70707f554cc5e46\imgui-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\88335c7adc0e376c5cfb16114f70466f\imgui-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="G:\Gemini_CLI\game-engine\build\_deps\imgui-subbuild\CMakeFiles\imgui-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{60DA054C-23CA-3185-9053-A661CBE074B2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

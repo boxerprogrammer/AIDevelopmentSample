@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <functional>
+#include <optional>
 
 namespace Core
 {
@@ -21,6 +23,10 @@ namespace Core
     class Window
     {
     public:
+        // 外部（ImGui など）から Win32 メッセージをフックするためのコールバック型
+        // 戻り値に値 (LRESULT) がある場合、Window 側での通常処理を行わずその値を OS に返します
+        using CustomWndProcHandler = std::function<std::optional<LRESULT>(HWND, UINT, WPARAM, LPARAM)>;
+
         /**
          * @brief ウィンドウを生成・表示するコンストラクタ
          * @param title ウィンドウのタイトルバーに表示される文字列
@@ -47,6 +53,11 @@ namespace Core
          * @return アプリケーションが継続中なら true、終了（ウィンドウが閉じられた）なら false
          */
         bool ProcessMessages();
+
+        /**
+         * @brief 外部メッセージハンドラ（ImGui 入力フック等）を設定
+         */
+        void SetCustomWndProcHandler(CustomWndProcHandler handler) { custom_wndproc_handler_ = std::move(handler); }
 
         // ゲッター関数群
         [[nodiscard]] HWND GetHwnd() const noexcept { return hwnd_; }
@@ -75,5 +86,6 @@ namespace Core
         uint32_t width_ = 0;                   // クライアント領域の幅
         uint32_t height_ = 0;                  // クライアント領域の高さ
         bool is_running_ = true;               // ウィンドウが動作中かどうかのフラグ
+        CustomWndProcHandler custom_wndproc_handler_; // 外部メッセージハンドラ
     };
 }

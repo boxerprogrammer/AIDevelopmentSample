@@ -121,6 +121,16 @@ namespace Core
 
     LRESULT Window::HandleMessage(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)
     {
+        // 外部メッセージハンドラ（ImGui など）が設定されていれば先に委譲
+        if (custom_wndproc_handler_)
+        {
+            const auto custom_result = custom_wndproc_handler_(hwnd, msg, w_param, l_param);
+            if (custom_result.has_value())
+            {
+                return custom_result.value();
+            }
+        }
+
         switch (msg)
         {
         case WM_CLOSE:

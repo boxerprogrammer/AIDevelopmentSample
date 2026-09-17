@@ -38,6 +38,11 @@ namespace Scene
         void SetScale(float s) noexcept { transform_.SetScale(s); }
         void SetScale(float x, float y, float z) noexcept { transform_.SetScale(x, y, z); }
 
+        // 方向ベクトルの取得（ワールド空間）
+        [[nodiscard]] DirectX::XMFLOAT3 GetForward() const noexcept;
+        [[nodiscard]] DirectX::XMFLOAT3 GetRight() const noexcept;
+        [[nodiscard]] DirectX::XMFLOAT3 GetUp() const noexcept;
+
     protected:
         Transform3D transform_; // ローカル変換情報
     };

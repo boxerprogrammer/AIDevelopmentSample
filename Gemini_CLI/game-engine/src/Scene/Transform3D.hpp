@@ -61,6 +61,43 @@ namespace Scene
         void SetScale(float x, float y, float z) noexcept { scale_ = { x, y, z }; }
         void SetScale(float uniform_scale) noexcept { scale_ = { uniform_scale, uniform_scale, uniform_scale }; }
 
+        // --- 方向ベクトルの取得 ---
+        /**
+         * @brief オブジェクトが現在向いている前方ベクトル（回転後のローカル +Z 軸）を取得
+         */
+        [[nodiscard]] DirectX::XMFLOAT3 GetForward() const noexcept
+        {
+            const DirectX::XMMATRIX r = DirectX::XMMatrixRotationRollPitchYaw(rotation_.x, rotation_.y, rotation_.z);
+            const DirectX::XMVECTOR forward = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), r);
+            DirectX::XMFLOAT3 result;
+            DirectX::XMStoreFloat3(&result, forward);
+            return result;
+        }
+
+        /**
+         * @brief オブジェクトから見た右方向ベクトル（回転後のローカル +X 軸）を取得
+         */
+        [[nodiscard]] DirectX::XMFLOAT3 GetRight() const noexcept
+        {
+            const DirectX::XMMATRIX r = DirectX::XMMatrixRotationRollPitchYaw(rotation_.x, rotation_.y, rotation_.z);
+            const DirectX::XMVECTOR right = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), r);
+            DirectX::XMFLOAT3 result;
+            DirectX::XMStoreFloat3(&result, right);
+            return result;
+        }
+
+        /**
+         * @brief オブジェクトから見た上方向ベクトル（回転後のローカル +Y 軸）を取得
+         */
+        [[nodiscard]] DirectX::XMFLOAT3 GetUp() const noexcept
+        {
+            const DirectX::XMMATRIX r = DirectX::XMMatrixRotationRollPitchYaw(rotation_.x, rotation_.y, rotation_.z);
+            const DirectX::XMVECTOR up = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), r);
+            DirectX::XMFLOAT3 result;
+            DirectX::XMStoreFloat3(&result, up);
+            return result;
+        }
+
     private:
         DirectX::XMFLOAT3 position_{ 0.0f, 0.0f, 0.0f }; // 位置 (X, Y, Z)
         DirectX::XMFLOAT3 rotation_{ 0.0f, 0.0f, 0.0f }; // 回転角（ラジアン: Pitch, Yaw, Roll）

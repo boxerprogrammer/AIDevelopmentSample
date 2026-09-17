@@ -23,4 +23,34 @@ namespace Scene
 
         return local;
     }
+
+    DirectX::XMFLOAT3 Node3D::GetForward() const noexcept
+    {
+        // 行優先のワールド変換行列において、Row 2 (Z軸) が前方ベクトルを表す
+        const DirectX::XMMATRIX world = GetWorldMatrix();
+        const DirectX::XMVECTOR forward = DirectX::XMVector3Normalize(world.r[2]);
+        DirectX::XMFLOAT3 result{};
+        DirectX::XMStoreFloat3(&result, forward);
+        return result;
+    }
+
+    DirectX::XMFLOAT3 Node3D::GetRight() const noexcept
+    {
+        // 行優先のワールド変換行列において、Row 0 (X軸) が右方向ベクトルを表す
+        const DirectX::XMMATRIX world = GetWorldMatrix();
+        const DirectX::XMVECTOR right = DirectX::XMVector3Normalize(world.r[0]);
+        DirectX::XMFLOAT3 result{};
+        DirectX::XMStoreFloat3(&result, right);
+        return result;
+    }
+
+    DirectX::XMFLOAT3 Node3D::GetUp() const noexcept
+    {
+        // 行優先のワールド変換行列において、Row 1 (Y軸) が上方向ベクトルを表す
+        const DirectX::XMMATRIX world = GetWorldMatrix();
+        const DirectX::XMVECTOR up = DirectX::XMVector3Normalize(world.r[1]);
+        DirectX::XMFLOAT3 result{};
+        DirectX::XMStoreFloat3(&result, up);
+        return result;
+    }
 }

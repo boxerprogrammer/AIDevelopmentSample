@@ -1,6 +1,8 @@
 #include "Graphics/Pipeline.hpp"
+#include "Graphics/VertexBuffer.hpp"
 #include <DirectXMath.h>
 #include <iostream>
+#include <cstddef>
 
 namespace Graphics
 {
@@ -15,18 +17,82 @@ namespace Graphics
     void Pipeline::CreateRootSignature(ID3D12Device* device)
     {
         // ルートシグネチャ: シェーダが外から受け取る引数リスト（契約書）
-        // register(b0) の定数バッファを受け取るためのルート記述子 (CBV) を1つ定義します
-        D3D12_ROOT_PARAMETER root_param{};
-        root_param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // 定数バッファビュー
-        root_param.Descriptor.ShaderRegister = 0;                 // register(b0)
-        root_param.Descriptor.RegisterSpace = 0;                  // space0
-        root_param.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // 頂点シェーダから参照
+        // Parameter 0: 定数バッファ register(b0) (ルート記述子)
+        // Parameter 1: アルベドテクスチャ register(t0) (ディスクリプタテーブル)
+        // Parameter 2: シャドウマップテクスチャ register(t1) (ディスクリプタテーブル)
+        D3D12_ROOT_PARAMETER root_params[3]{};
+
+        // 1. 定数バッファ (CBV register(b0))
+        root_params[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+        root_params[0].Descriptor.ShaderRegister = 0;                 // register(b0)
+        root_params[0].Descriptor.RegisterSpace = 0;                  // space0
+        root_params[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 頂点・ピクセル両方から参照
+
+        // 2. アルベドテクスチャ (SRV register(t0))
+        D3D12_DESCRIPTOR_RANGE albedo_range{};
+        albedo_range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+        albedo_range.NumDescriptors = 1;
+        albedo_range.BaseShaderRegister = 0;                             // register(t0)
+        albedo_range.RegisterSpace = 0;
+        albedo_range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+        root_params[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        root_params[1].DescriptorTable.NumDescriptorRanges = 1;
+        root_params[1].DescriptorTable.pDescriptorRanges = &albedo_range;
+        root_params[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダから参照
+
+        // 3. シャドウマップテクスチャ (SRV register(t1))
+        D3D12_DESCRIPTOR_RANGE shadow_range{};
+        shadow_range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+        shadow_range.NumDescriptors = 1;
+        shadow_range.BaseShaderRegister = 1;                             // register(t1)
+        shadow_range.RegisterSpace = 0;
+        shadow_range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+        root_params[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        root_params[2].DescriptorTable.NumDescriptorRanges = 1;
+        root_params[2].DescriptorTable.pDescriptorRanges = &shadow_range;
+        root_params[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダから参照
+
+        // スタティックサンプラー群の定義
+        D3D12_STATIC_SAMPLER_DESC static_samplers[2]{};
+
+        // Sampler 0: アルベド用バイリニアサンプラー (register(s0))
+        static_samplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;         // バイリニア補間
+        static_samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;       // UV > 1.0 でタイリング繰り返し
+        static_samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        static_samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        static_samplers[0].MipLODBias = 0.0f;
+        static_samplers[0].MaxAnisotropy = 1;
+        static_samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        static_samplers[0].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+        static_samplers[0].MinLOD = 0.0f;
+        static_samplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+        static_samplers[0].ShaderRegister = 0;                               // register(s0)
+        static_samplers[0].RegisterSpace = 0;
+        static_samplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+        // Sampler 1: シャドウマップ用ハードウェア比較サンプラー (register(s1))
+        // ※ 深度比較と 2x2 バイリニア補間を GPU ハードウェアで一括処理
+        static_samplers[1].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+        static_samplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+        static_samplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+        static_samplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+        static_samplers[1].MipLODBias = 0.0f;
+        static_samplers[1].MaxAnisotropy = 1;
+        static_samplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL; // 深度 <= シャドウマップなら遮蔽なし
+        static_samplers[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE; // 範囲外は深度 1.0 (光が当たる)
+        static_samplers[1].MinLOD = 0.0f;
+        static_samplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+        static_samplers[1].ShaderRegister = 1;                               // register(s1)
+        static_samplers[1].RegisterSpace = 0;
+        static_samplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
         D3D12_ROOT_SIGNATURE_DESC root_sig_desc{};
-        root_sig_desc.NumParameters = 1;                          // ルートパラメータの数: 1
-        root_sig_desc.pParameters = &root_param;
-        root_sig_desc.NumStaticSamplers = 0;
-        root_sig_desc.pStaticSamplers = nullptr;
+        root_sig_desc.NumParameters = _countof(root_params);
+        root_sig_desc.pParameters = root_params;
+        root_sig_desc.NumStaticSamplers = _countof(static_samplers);
+        root_sig_desc.pStaticSamplers = static_samplers;
         root_sig_desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
         // シリアライズ（バイナリデータ化）
@@ -52,23 +118,41 @@ namespace Graphics
     void Pipeline::CreatePipelineState(ID3D12Device* device, const Shader& vs, const Shader& ps)
     {
         // 1. 頂点入力レイアウト（Vertex 構造体のメモリ並び順を GPU に教える）
-        // HLSL 側の VSInput (float3 position : POSITION, float4 color : COLOR) と完全に対応させます
+        // HLSL 側の VSInput (position, normal, color, texcoord) と完全に対応させます
         D3D12_INPUT_ELEMENT_DESC input_elements[] = {
             {
-                "POSITION",                                    // HLSL のセマンティクス名
-                0,                                             // インデックス
-                DXGI_FORMAT_R32G32B32_FLOAT,                   // float 3つ分 (12 bytes)
-                0,                                             // 入力スロット
-                0,                                             // 構造体の先頭からのオフセット (バイト)
-                D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,    // 頂点ごとのデータ
+                "POSITION",                                    // 3次元座標
+                0,
+                DXGI_FORMAT_R32G32B32_FLOAT,                   // float 3つ (12 bytes)
+                0,
+                static_cast<UINT>(offsetof(Vertex, position)), // オフセット 0
+                D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
                 0
             },
             {
-                "COLOR",                                       // HLSL のセマンティクス名
+                "NORMAL",                                      // 法線ベクトル（ライティング用）
                 0,
-                DXGI_FORMAT_R32G32B32A32_FLOAT,                // float 4つ分 (16 bytes)
+                DXGI_FORMAT_R32G32B32_FLOAT,                   // float 3つ (12 bytes)
                 0,
-                12,                                            // POSITION (12 bytes) の直後から開始
+                static_cast<UINT>(offsetof(Vertex, normal)),   // オフセット 12
+                D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+                0
+            },
+            {
+                "COLOR",                                       // 頂点固有カラー
+                0,
+                DXGI_FORMAT_R32G32B32A32_FLOAT,                // float 4つ (16 bytes)
+                0,
+                static_cast<UINT>(offsetof(Vertex, color)),    // オフセット 24
+                D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+                0
+            },
+            {
+                "TEXCOORD",                                    // テクスチャ UV 座標
+                0,
+                DXGI_FORMAT_R32G32_FLOAT,                      // float 2つ (8 bytes)
+                0,
+                static_cast<UINT>(offsetof(Vertex, texcoord)),  // オフセット 40
                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
                 0
             }
@@ -142,5 +226,10 @@ namespace Graphics
     void Pipeline::SetConstantBufferView(ID3D12GraphicsCommandList* command_list, UINT root_parameter_index, D3D12_GPU_VIRTUAL_ADDRESS buffer_address) const noexcept
     {
         command_list->SetGraphicsRootConstantBufferView(root_parameter_index, buffer_address);
+    }
+
+    void Pipeline::SetDescriptorTable(ID3D12GraphicsCommandList* command_list, UINT root_parameter_index, D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor) const noexcept
+    {
+        command_list->SetGraphicsRootDescriptorTable(root_parameter_index, base_descriptor);
     }
 }

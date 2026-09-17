@@ -182,6 +182,36 @@ EduGameEngine_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 EduGameEngine_SOURCE_DIR:STATIC=G:/Gemini_CLI/game-engine
 
+//Directory under which to collect all populated content
+FETCHCONTENT_BASE_DIR:PATH=G:/Gemini_CLI/game-engine/build/_deps
+
+//Disables all attempts to download or update content and assumes
+// source dirs already exist
+FETCHCONTENT_FULLY_DISCONNECTED:BOOL=OFF
+
+//Enables QUIET option for all content population
+FETCHCONTENT_QUIET:BOOL=ON
+
+//When not empty, overrides where to find pre-populated content
+// for imgui
+FETCHCONTENT_SOURCE_DIR_IMGUI:PATH=
+
+//When not empty, overrides where to find pre-populated content
+// for stb
+FETCHCONTENT_SOURCE_DIR_STB:PATH=
+
+//Enables UPDATE_DISCONNECTED behavior for all content population
+FETCHCONTENT_UPDATES_DISCONNECTED:BOOL=OFF
+
+//Enables UPDATE_DISCONNECTED behavior just for population of imgui
+FETCHCONTENT_UPDATES_DISCONNECTED_IMGUI:BOOL=OFF
+
+//Enables UPDATE_DISCONNECTED behavior just for population of stb
+FETCHCONTENT_UPDATES_DISCONNECTED_STB:BOOL=OFF
+
+//Git command line client
+GIT_EXECUTABLE:FILEPATH=D:/Program Files/Git/cmd/git.exe
+
 
 ########################
 # INTERNAL cache entries
@@ -310,4 +340,6 @@ CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Deprecated.  Use -W[no-]deprecated instead.
 CMAKE_WARN_DEPRECATED:INTERNAL=ON
+//ADVANCED property for variable: GIT_EXECUTABLE
+GIT_EXECUTABLE-ADVANCED:INTERNAL=1
 

@@ -13,7 +13,9 @@ namespace Graphics
     struct Vertex
     {
         DirectX::XMFLOAT3 position; // 3次元座標 (X, Y, Z)
+        DirectX::XMFLOAT3 normal;   // 法線ベクトル (Nx, Ny, Nz) - ライティング計算用
         DirectX::XMFLOAT4 color;    // 色 (R, G, B, A)
+        DirectX::XMFLOAT2 texcoord; // テクスチャ UV 座標 (U, V)
     };
 
     /**

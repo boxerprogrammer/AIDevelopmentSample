@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="G:\Gemini_CLI\game-engine\build\_deps\stb-subbuild\CMakeFiles\43cf741f7eeadd8ed9cfe8c9e6283b94\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{BDA64411-8398-34DF-A2CD-7DF2697433ED}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

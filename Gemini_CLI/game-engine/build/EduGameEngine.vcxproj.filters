@@ -7,6 +7,9 @@
     <ClCompile Include="G:\Gemini_CLI\game-engine\src\Core\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Core\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="G:\Gemini_CLI\game-engine\src\Graphics\GraphicsDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -28,6 +31,12 @@
     <ClCompile Include="G:\Gemini_CLI\game-engine\src\Graphics\Pipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Graphics\ShadowMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Graphics\ShadowPipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="G:\Gemini_CLI\game-engine\src\Scene\Node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -40,12 +49,36 @@
     <ClCompile Include="G:\Gemini_CLI\game-engine\src\Scene\Camera3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Scene\FlightCamera3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Scene\DirectionalLight3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="G:\Gemini_CLI\game-engine\src\Scene\MeshInstance3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Resource\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Resource\Texture2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Resource\Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Resource\ResourceLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G:\Gemini_CLI\game-engine\src\Debug\ImGuiLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="G:\Gemini_CLI\game-engine\src\Core\Window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Core\Input.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="G:\Gemini_CLI\game-engine\src\Graphics\DirectXHelper.hpp">
@@ -75,6 +108,12 @@
     <ClInclude Include="G:\Gemini_CLI\game-engine\src\Graphics\Pipeline.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Graphics\ShadowMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Graphics\ShadowPipeline.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="G:\Gemini_CLI\game-engine\src\Graphics\RenderItem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -93,7 +132,31 @@
     <ClInclude Include="G:\Gemini_CLI\game-engine\src\Scene\Camera3D.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Scene\FlightCamera3D.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Scene\DirectionalLight3D.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="G:\Gemini_CLI\game-engine\src\Scene\MeshInstance3D.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Resource\Resource.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Resource\Mesh.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Resource\Texture2D.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Resource\Material.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Resource\ResourceLoader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="G:\Gemini_CLI\game-engine\src\Debug\ImGuiLayer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

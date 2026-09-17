@@ -4,6 +4,9 @@
   "Documents": [
     {
       "AbsoluteMoniker": "D:0:0:{88CB6D30-842E-3226-9FC0-A85028416176}|EduGameEngine.vcxproj|G:\\Gemini_CLI\\game-engine\\src\\Main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88CB6D30-842E-3226-9FC0-A85028416176}|EduGameEngine.vcxproj|G:\\Gemini_CLI\\game-engine\\src\\Debug\\ImGuiLayer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -55,10 +58,22 @@
               "RelativeDocumentMoniker": "..\\src\\Main.cpp",
               "ToolTip": "G:\\Gemini_CLI\\game-engine\\src\\Main.cpp",
               "RelativeToolTip": "..\\src\\Main.cpp",
-              "ViewState": "AgIAALkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAPEAAAAAAAAAAAAAAP0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-09-17T04:05:39.902Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ImGuiLayer.cpp",
+              "DocumentMoniker": "G:\\Gemini_CLI\\game-engine\\src\\Debug\\ImGuiLayer.cpp",
+              "RelativeDocumentMoniker": "..\\src\\Debug\\ImGuiLayer.cpp",
+              "ToolTip": "G:\\Gemini_CLI\\game-engine\\src\\Debug\\ImGuiLayer.cpp",
+              "RelativeToolTip": "..\\src\\Debug\\ImGuiLayer.cpp",
+              "ViewState": "AgIAAGEAAAAAAAAAAAAuwG0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-09-17T06:28:55.394Z"
             }
           ]
         }

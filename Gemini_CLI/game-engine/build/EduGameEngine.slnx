@@ -10,6 +10,7 @@
 	<Project Path="ALL_BUILD.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="7dc8efa4-f11b-341c-9861-2b8590b0e5a3" DefaultStartup="true">
 		<BuildDependency Project="EduGameEngine.vcxproj"/>
 		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="imgui.vcxproj"/>
 		<Build Solution="Debug|*" Project="false"/>
 		<Build Solution="Release|*" Project="false"/>
 		<Build Solution="MinSizeRel|*" Project="false"/>
@@ -17,6 +18,10 @@
 	</Project>
 	<Project Path="EduGameEngine.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="88cb6d30-842e-3226-9fc0-a85028416176">
 		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="imgui.vcxproj"/>
 	</Project>
 	<Project Path="ZERO_CHECK.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="400dc949-f164-354b-a8fc-70d734edd713"/>
+	<Project Path="imgui.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="738c1800-75d3-3e7b-8593-0a88c85e8922">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
 </Solution>

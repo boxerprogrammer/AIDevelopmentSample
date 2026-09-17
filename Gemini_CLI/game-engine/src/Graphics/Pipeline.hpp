@@ -45,6 +45,14 @@ namespace Graphics
          */
         void SetConstantBufferView(ID3D12GraphicsCommandList* command_list, UINT root_parameter_index, D3D12_GPU_VIRTUAL_ADDRESS buffer_address) const noexcept;
 
+        /**
+         * @brief ルートパラメータにディスクリプタテーブル (SRV テクスチャ等) をセットする
+         * @param command_list コマンドリスト
+         * @param root_parameter_index ルートパラメータのインデックス（今回は 1）
+         * @param base_descriptor ディスクリプタの GPU ハンドル
+         */
+        void SetDescriptorTable(ID3D12GraphicsCommandList* command_list, UINT root_parameter_index, D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor) const noexcept;
+
         [[nodiscard]] ID3D12RootSignature* GetRootSignature() const noexcept { return root_signature_.Get(); }
         [[nodiscard]] ID3D12PipelineState* GetPipelineState() const noexcept { return pipeline_state_.Get(); }
 
